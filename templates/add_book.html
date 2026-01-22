@@ -28,8 +28,19 @@
         </div>
 
         <div id="digitalFields" style="display: none;">
-            <label>Upload File (PDF, etc.)</label>
-            <input type="file" name="file_upload">
+            <label>Upload File (Max 16MB)</label>
+            <div style="border: 2px dashed rgba(255,255,255,0.3); padding: 2rem; border-radius: 12px; text-align: center; margin-bottom: 1.5rem; transition: all 0.3s;"
+                id="dropZone" onmouseover="this.style.borderColor='var(--primary)';"
+                onmouseout="this.style.borderColor='rgba(255,255,255,0.3)';">
+                <input type="file" name="file_upload" id="fileUpload" style="display: none;"
+                    onchange="validateFile(this)">
+                <p style="margin: 0; color: var(--text-muted);">Drag & Drop or <span
+                        style="color: var(--secondary); cursor: pointer;"
+                        onclick="document.getElementById('fileUpload').click()">Browse</span></p>
+                <p id="fileName" style="margin-top: 0.5rem; font-size: 0.9rem; color: #fff;"></p>
+                <p id="fileError" style="margin-top: 0.5rem; font-size: 0.8rem; color: #ff7675; display: none;"></p>
+            </div>
+
             <p style="text-align: center; margin: 0.5rem 0;">OR</p>
             <label>External Download Link</label>
             <input type="text" name="file_link" placeholder="https://example.com/resource">
@@ -40,6 +51,32 @@
 </div>
 
 <script>
+    function validateFile(input) {
+        const file = input.files[0];
+        const errorMsg = document.getElementById('fileError');
+        const fileNameDisplay = document.getElementById('fileName');
+        const submitBtn = document.querySelector('button[type="submit"]');
+
+        if (file) {
+            // Check size (16MB limit)
+            if (file.size > 16 * 1024 * 1024) {
+                errorMsg.innerText = "File is too large! Please upload a file smaller than 16MB.";
+                errorMsg.style.display = 'block';
+                fileNameDisplay.innerText = "";
+                input.value = ""; // Clear input
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = "0.5";
+                submitBtn.style.cursor = "not-allowed";
+            } else {
+                errorMsg.style.display = 'none';
+                fileNameDisplay.innerText = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = "1";
+                submitBtn.style.cursor = "pointer";
+            }
+        }
+    }
+
     function toggleTypeFields() {
         const type = document.getElementById('typeSelect').value;
         const digital = document.getElementById('digitalFields');

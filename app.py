@@ -13,6 +13,11 @@ import cloudinary.api
 app = Flask(__name__)
 app.config.from_object(Config)
 
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    flash('File too large. Maximum size is 16MB.')
+    return redirect(url_for('add_book'))
+
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.login_view = 'login'
@@ -123,9 +128,24 @@ def add_book():
             if uploaded_file and uploaded_file.filename != '':
                 if allowed_file(uploaded_file.filename):
                     try:
-                        upload_result = cloudinary.uploader.upload(uploaded_file, resource_type="auto")
-                        final_file_link = upload_result.get('secure_url')
-                        filename = upload_result.get('public_id') # Storing public_id in filename column
+                        # Local Upload Logic
+                        filename = secure_filename(uploaded_file.filename)
+                        # Ensure filename is unique to prevent overwrite
+                        import uuid
+                        filename = f"{uuid.uuid4().hex}_{filename}"
+                        
+                        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        uploaded_file.save(file_path)
+                        
+                        # Set file_link to the local static route
+                        # Note: We store the filename, but for the link we want the URL
+                        # But typically we just construct the URL in the template using the filename.
+                        # However, for consistency with the 'file_link' field which might be an external URL...
+                        # We will store the relative URL in file_link if local.
+                        
+                        # Actually keeping filename is good.
+                        final_file_link = url_for('static', filename='uploads/' + filename) 
+                        
                     except Exception as e:
                         flash(f'Upload failed: {str(e)}')
                         return redirect(url_for('add_book'))
@@ -146,7 +166,7 @@ def add_book():
             category=category, 
             type=b_type, 
             file_link=final_file_link, 
-            filename=filename, 
+            filename=filename, # Storing just the filename too if useful
             owner=current_user,
             location=location_note,
             description=description

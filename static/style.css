@@ -108,10 +108,7 @@ nav {
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.27), box-shadow 0.4s;
     transform-style: preserve-3d;
     position: relative;
-    overflow: hidden;
-    /* Ensures content doesn't break rounded corners */
-    height: 100%;
-    /* Equal height cards */
+    /* height: 100%; Removed to prevent overlap if content differs */
     display: flex;
     flex-direction: column;
 }
