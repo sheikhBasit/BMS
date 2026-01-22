@@ -37,6 +37,13 @@ def load_user(user_id):
 
 with app.app_context():
     db.create_all()
+    # Ping database to check connection
+    try:
+        from sqlalchemy import text
+        db.session.execute(text('SELECT 1'))
+        print("Database connected successfully!")
+    except Exception as e:
+        print(f"Database connection error: {e}")
 
 # Predefined book categories
 BOOK_CATEGORIES = [
@@ -95,15 +102,17 @@ def login():
         remember = True if request.form.get('remember') else False
         
         user = User.query.filter_by(username=username).first()
-        
-        if user and user.check_password(password):
-            if user.is_blocked:
-                flash('Your account has been blocked. Please contact support.')
-                return redirect(url_for('login'))
-                
-            login_user(user, remember=remember)
-            return redirect(url_for('dashboard'))
-        flash('Invalid username or password')
+        if user:
+            if user.check_password(password):
+                if user.is_blocked:
+                    flash('Your account has been blocked. Please contact support.')
+                    return redirect(url_for('login'))
+                login_user(user, remember=remember)
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Incorrect password. Please try again.')
+        else:
+            flash('Username not found. Please check your spelling or register.')
     return render_template('login.html')
 
 @app.route('/logout')
@@ -116,7 +125,20 @@ def logout():
 def index():
     query = request.args.get('q', '').strip()
     if query:
-        books = Book.query.filter(Book.is_deleted == False).filter((Book.title.contains(query)) | (Book.author.contains(query)) | (Book.category.contains(query))).all()
+        # Keyword search: split by space and search for each term
+        keywords = query.split()
+        filters = []
+        for word in keywords:
+            word_filter = (Book.title.ilike(f'%{word}%')) | \
+                         (Book.author.ilike(f'%{word}%')) | \
+                         (Book.category.ilike(f'%{word}%'))
+            filters.append(word_filter)
+        
+        if filters:
+            from sqlalchemy import and_
+            books = Book.query.filter(Book.is_deleted == False).filter(and_(*filters)).all()
+        else:
+            books = Book.query.filter_by(is_deleted=False).all()
     else:
         books = Book.query.filter_by(is_deleted=False).all()
     return render_template('index.html', books=books)
