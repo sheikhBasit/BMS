@@ -31,13 +31,17 @@ def index_root():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
         password = request.form.get('password')
         role = 'Member' # Default role
         
-        if User.query.filter_by(username=username).first():
-            flash('Username already exists')
+        if not username or not email or not password:
+             flash('All fields are required.')
+             return redirect(url_for('register'))
+
+        if User.query.filter((User.username == username) | (User.email == email)).first():
+            flash('Username or Email already exists')
             return redirect(url_for('register'))
             
         user = User(username=username, email=email, role=role)
@@ -51,7 +55,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
+        username = request.form.get('username', '').strip()
         password = request.form.get('password')
         remember = True if request.form.get('remember') else False
         
@@ -75,11 +79,11 @@ def logout():
 
 @app.route('/index')
 def index():
-    query = request.args.get('q')
+    query = request.args.get('q', '').strip()
     if query:
-        books = Book.query.filter((Book.title.contains(query)) | (Book.author.contains(query)) | (Book.category.contains(query))).all()
+        books = Book.query.filter(Book.is_deleted == False).filter((Book.title.contains(query)) | (Book.author.contains(query)) | (Book.category.contains(query))).all()
     else:
-        books = Book.query.all()
+        books = Book.query.filter_by(is_deleted=False).all()
     return render_template('index.html', books=books)
 
 # Configure Cloudinary
@@ -99,9 +103,9 @@ def allowed_file(filename):
 @login_required
 def add_book():
     if request.method == 'POST':
-        title = request.form.get('title')
-        author = request.form.get('author')
-        category = request.form.get('category')
+        title = request.form.get('title', '').strip()
+        author = request.form.get('author', '').strip()
+        category = request.form.get('category', '').strip()
         b_type = request.form.get('type')
         
         # Validation
@@ -156,21 +160,21 @@ def add_book():
 @login_required
 def edit_book(id):
     book = Book.query.get_or_404(id)
-    if book.owner != current_user:
+    # Admin can edit any book, Owner can edit their own
+    if book.owner != current_user and current_user.role != 'Admin':
         return "Unauthorized", 403
     
     if request.method == 'POST':
-        book.title = request.form.get('title')
-        book.author = request.form.get('author')
-        book.category = request.form.get('category')
-        book.description = request.form.get('description')
-        book.location = request.form.get('location')
-        
-        # We generally don't allow changing type/file here for simplicity, 
-        # or it would require re-validating uploads. Keeping it simple as per reqs (Edit details).
+        book.title = request.form.get('title', '').strip()
+        book.author = request.form.get('author', '').strip()
+        book.category = request.form.get('category', '').strip()
+        book.description = request.form.get('description', '').strip()
+        book.location = request.form.get('location', '').strip()
         
         db.session.commit()
         flash('Book updated successfully.')
+        if current_user.role == 'Admin':
+             return redirect(url_for('admin_dashboard'))
         return redirect(url_for('dashboard'))
         
     return render_template('edit_book.html', book=book)
@@ -233,8 +237,6 @@ def handle_request(id):
         if new_date: req.proposed_date = new_date
         if new_time: req.proposed_time = new_time
         if new_location: req.proposed_location = new_location
-        # Do not change status to accepted yet, keep pending or mark as 'Changes Proposed' if we had that state. 
-        # For simplicity, we'll keep it Pending but update values.
         flash('Suggestions sent to borrower.')
         
     db.session.commit()
@@ -247,20 +249,13 @@ def return_book(req_id):
     
     # Logic: Owner returns Physical, Borrower returns Digital
     if req.book.type == 'Physical':
-        if req.book.owner != current_user:
+        if req.book.owner != current_user and current_user.role != 'Admin':
              return "Unauthorized", 403
         req.book.status = 'Returned'
-        # req.request_status = 'Returned' # Optional if we want to track request history state
         
     elif req.book.type == 'Digital':
-        if req.borrower != current_user:
+        if req.borrower != current_user and current_user.role != 'Admin':
              return "Unauthorized", 403
-        req.book.status = 'Available' # Digital books go back to available immediately? Or Stay 'Returned' until reset?
-        # Logic says "Book status always flows as: Available → Borrowed → Returned."
-        # For Digital, "Borrower clicks Mark as Returned (or system auto-returns)".
-        # Let's set it to Returned, then maybe logic elsewhere makes it Available again? 
-        # Actually usually digital books can be borrowed by multiple people or just one.
-        # Assuming single-instance model based on "Status" field on Book.
         req.book.status = 'Returned'
 
     db.session.commit()
@@ -275,9 +270,12 @@ def dashboard():
         return redirect(url_for('admin_dashboard'))
     
     # Member Dashboard Logic
-    my_books = Book.query.filter_by(owner=current_user).all()
+    # Update: Filter out deleted books
+    my_books = Book.query.filter_by(owner=current_user, is_deleted=False).all()
     borrowed_requests = BorrowRequest.query.filter_by(borrower=current_user).all()
-    received_requests = BorrowRequest.query.join(Book).filter(Book.owner == current_user).all()
+    # Received requests for non-deleted books
+    received_requests = BorrowRequest.query.join(Book).filter(Book.owner == current_user, Book.is_deleted == False).all()
+    
     return render_template('dashboard.html', my_books=my_books, borrowed_requests=borrowed_requests, received_requests=received_requests)
 
 @app.route('/admin')
@@ -287,13 +285,13 @@ def admin_dashboard():
         return "Unauthorized", 403
         
     users = User.query.all()
-    books = Book.query.all()
+    books = Book.query.filter_by(is_deleted=False).all()
     
     # Metrics
     total_users = User.query.count()
-    total_books = Book.query.count()
+    total_books = Book.query.filter_by(is_deleted=False).count()
     total_requests = BorrowRequest.query.count()
-    active_borrows = Book.query.filter_by(status='Borrowed').count()
+    active_borrows = Book.query.filter_by(status='Borrowed', is_deleted=False).count()
     
     return render_template('admin.html', 
         users=users, 
@@ -310,12 +308,10 @@ def delete_book_admin(id):
     if current_user.role != 'Admin':
         return "Unauthorized", 403
     book = Book.query.get_or_404(id)
-    # Also delete associated requests
-    BorrowRequest.query.filter_by(book_id=id).delete()
-    db.session.delete(book)
+    book.is_deleted = True
     db.session.commit()
-    flash('Book removed by Admin.')
-    return redirect(url_for('admin'))
+    flash('Book removed by Admin (Soft Deleted).')
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/toggle_block_user/<int:id>', methods=['POST'])
 @login_required
@@ -325,13 +321,13 @@ def toggle_block_user(id):
     user = User.query.get_or_404(id)
     if user.username == 'admin': # Protect admin
         flash('Cannot block admin.')
-        return redirect(url_for('admin'))
+        return redirect(url_for('admin_dashboard'))
         
     user.is_blocked = not user.is_blocked
     db.session.commit()
     status = 'blocked' if user.is_blocked else 'unblocked'
     flash(f'User {user.username} has been {status}.')
-    return redirect(url_for('admin'))
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/api/like/<int:book_id>', methods=['POST'])
 @login_required
@@ -345,10 +341,9 @@ def like_book(book_id):
 @login_required
 def delete_book(id):
     book = Book.query.get_or_404(id)
-    if book.owner != current_user:
+    if book.owner != current_user and current_user.role != 'Admin':
         return "Unauthorized", 403
-    BorrowRequest.query.filter_by(book_id=id).delete()
-    db.session.delete(book)
+    book.is_deleted = True
     db.session.commit()
     flash('Book deleted.')
     return redirect(url_for('dashboard'))

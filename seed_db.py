@@ -42,26 +42,26 @@ def seed_database():
             return random.choice(users_objs[1:]) # Skip admin
             
         book_list = [
-            ("The Great Gatsby", "F. Scott Fitzgerald", "Fiction", "Physical", None),
-            ("To Kill a Mockingbird", "Harper Lee", "Fiction", "Physical", None),
-            ("1984", "George Orwell", "Fiction", "Physical", None),
-            ("Pride and Prejudice", "Jane Austen", "Fiction", "Physical", None),
-            ("The Catcher in the Rye", "J.D. Salinger", "Fiction", "Physical", None),
-            ("Sapiens", "Yuval Noah Harari", "Non-Fiction", "Digital", "http://example.com/sapiens.pdf"),
-            ("Clean Code", "Robert C. Martin", "Technology", "Physical", None),
-            ("The Pragmatic Programmer", "Andrew Hunt", "Technology", "Digital", "http://example.com/pragmatic.pdf"),
-            ("Introduction to Algorithms", "Thomas H. Cormen", "Technology", "Physical", None),
-            ("Design Patterns", "Erich Gamma", "Technology", "Physical", None),
-            ("A Short History of Nearly Everything", "Bill Bryson", "Science", "Digital", "http://example.com/history.pdf"),
-            ("Cosmos", "Carl Sagan", "Science", "Physical", None),
-            ("The Art of War", "Sun Tzu", "History", "Digital", "http://example.com/artofwar.pdf"),
-            ("Guns, Germs, and Steel", "Jared Diamond", "History", "Physical", None),
-            ("Thinking, Fast and Slow", "Daniel Kahneman", "Non-Fiction", "Physical", None)
+            ("The Great Gatsby", "F. Scott Fitzgerald", "Fiction", "Physical", None, "Main Library, Shelf A", "Classic novel of the Jazz Age."),
+            ("To Kill a Mockingbird", "Harper Lee", "Fiction", "Physical", None, "Community Center Drop-off", "Powerful story of racial injustice."),
+            ("1984", "George Orwell", "Fiction", "Physical", None, "Westside Book Club", "Dystopian social science fiction."),
+            ("Pride and Prejudice", "Jane Austen", "Fiction", "Physical", None, "Available on Weekends", "Romantic novel of manners."),
+            ("The Catcher in the Rye", "J.D. Salinger", "Fiction", "Physical", None, "Coffee Shop Downtown", "A story of teenage alienation."),
+            ("Sapiens", "Yuval Noah Harari", "Non-Fiction", "Digital", "https://upload.wikimedia.org/wikipedia/commons/2/25/Sapiens_A_Brief_History_of_Humankind.pdf", None, "A brief history of humankind."),
+            ("Clean Code", "Robert C. Martin", "Technology", "Physical", None, "Tech Hub Office", "A Handbook of Agile Software Craftsmanship."),
+            ("The Pragmatic Programmer", "Andrew Hunt", "Technology", "Digital", "https://www.cin.ufpe.br/~sugar/files/The%20Pragmatic%20Programmer%20-%20From%20Journeyman%20to%20Master.pdf", None, "From Journeyman to Master."),
+            ("Introduction to Algorithms", "Thomas H. Cormen", "Technology", "Physical", None, "University Lab", "Comprehensive guide to algorithms."),
+            ("Design Patterns", "Erich Gamma", "Technology", "Physical", None, "Dev Lounge", "Elements of Reusable Object-Oriented Software."),
+            ("A Short History of Nearly Everything", "Bill Bryson", "Science", "Digital", "http://www.metaphysicspirit.com/books/A%20Short%20History%20of%20Nearly%20Everything.pdf", None, "Bill Bryson explains science to the layperson."),
+            ("Cosmos", "Carl Sagan", "Science", "Physical", None, "Science Museum Gift Shop", "The story of cosmic evolution."),
+            ("The Art of War", "Sun Tzu", "History", "Digital", "https://sites.ualberta.ca/~enoch/Readings/The_Art_of_War.pdf", None, "Ancient Chinese military treatise."),
+            ("Guns, Germs, and Steel", "Jared Diamond", "History", "Physical", None, "History Dept.", "The Fates of Human Societies."),
+            ("Thinking, Fast and Slow", "Daniel Kahneman", "Non-Fiction", "Physical", None, "Psychology Wing", "System 1 and System 2 thinking.")
         ]
         
         books_objs = []
-        for title, author, cat, btype, link in book_list:
-            b = Book(title=title, author=author, category=cat, type=btype, file_link=link, owner=get_owner())
+        for title, author, cat, btype, link, loc, desc in book_list:
+            b = Book(title=title, author=author, category=cat, type=btype, file_link=link, owner=get_owner(), location=loc, description=desc)
             books_objs.append(b)
             
         db.session.add_all(books_objs)

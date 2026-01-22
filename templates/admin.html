@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
+{% block body_class %}page-admin{% endblock %}
 {% block content %}
 <h1>Admin Overview</h1>
 
 <!-- Metrics Cards -->
-<div class="grid" style="margin-bottom: 3rem;">
+<div class="grid" style="margin-bottom: 3rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
     <div class="card" style="text-align: center; border-left: 5px solid #00b894;">
         <h3 style="font-size: 3rem; margin-bottom: 0;">{{ total_users }}</h3>
         <p style="color: var(--text-muted); margin-top: 0;">Total Users</p>
@@ -83,8 +84,12 @@
                         <td>{{ book.author }}</td>
                         <td>{{ book.owner.username }}</td>
                         <td>
+                            <a href="{{ url_for('edit_book', id=book.id) }}" style="text-decoration: none;">
+                                <button class="btn-small"
+                                    style="background: #0984e3; padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto; display: inline-block;">Edit</button>
+                            </a>
                             <form method="POST" action="{{ url_for('delete_book_admin', id=book.id) }}"
-                                onsubmit="return confirm('Delete this book universally?');">
+                                onsubmit="return confirm('Delete this book universally?');" style="display:inline;">
                                 <button type="submit" class="btn-small"
                                     style="background: #d63031; width: auto;">Remove</button>
                             </form>

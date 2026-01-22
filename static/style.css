@@ -412,17 +412,39 @@ tr:hover td {
     }
 }
 
+/* Page Specific Backgrounds */
+.page-login {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1507842217121-9e871299ee18?auto=format&fit=crop&w=2000&q=80');
+}
+
+.page-register {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=2000&q=80');
+}
+
+.page-dashboard {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=2000&q=80');
+}
+
+.page-admin {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=2000&q=80');
+}
+
 /* Auth Pages Specific */
-.auth-wrapper {
+.auth-wrapper,
+.auth-container {
     min-height: 80vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 2rem;
 }
 
-.auth-card {
+.auth-card,
+.auth-container .card {
     width: 100%;
-    max-width: 450px;
-    background: rgba(20, 20, 30, 0.6);
+    max-width: 400px !important;
+    /* Force smaller size */
+    background: rgba(20, 20, 30, 0.7);
     backdrop-filter: blur(20px);
+    margin: 0 auto;
 }

@@ -30,6 +30,7 @@ class Book(db.Model):
     filename = db.Column(db.String(500), nullable=True) # Uploaded file path
     likes = db.Column(db.Integer, default=0) # New Interactive Feature
     status = db.Column(db.String(20), default='Available') # Available, Borrowed, Returned
+    is_deleted = db.Column(db.Boolean, default=False) # Soft delete flag
     
     # Adding owner relationship as implied by workflow
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
