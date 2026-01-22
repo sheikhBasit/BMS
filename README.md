@@ -93,6 +93,12 @@ BookShare is a warm, inviting web-based community platform that brings book love
    ```
 3. Open your browser and visit: `http://127.0.0.1:5000`
 
+
+### 🛠 To run with Docker locally:
+```bash
+docker-compose up --build
+```
+
 ### Default Accounts (from Seeding)
 - **Admin**: `admin` / `admin123`
 - **User**: `alice` / `password`
@@ -190,3 +196,5 @@ The cozy reading theme can be customized via CSS variables in `static/style.css`
 ---
 
 **Made with ❤️ for book lovers**
+
+
