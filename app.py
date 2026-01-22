@@ -11,6 +11,14 @@ import cloudinary.uploader
 import cloudinary.api
 
 app = Flask(__name__)
+
+# Fix for Vercel Read-only File System
+if os.environ.get('VERCEL'):
+    app.instance_path = '/tmp'
+    # Ensure SQLite uses the writable /tmp directory if no DATABASE_URL is set
+    if not os.environ.get('DATABASE_URL'):
+        Config.SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join('/tmp', 'bms.db')
+
 app.config.from_object(Config)
 
 @app.errorhandler(413)
@@ -27,6 +35,7 @@ login_manager.init_app(app)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+with app.app_context():
     db.create_all()
 
 # Predefined book categories
