@@ -6,7 +6,16 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY') or 'dev-key-fallback'
-    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI') or 'sqlite:///bms.db'
+    
+    # Database URI Logic
+    # 1. Check for Vercel Postgres URL or generic DATABASE_URL
+    db_url = os.getenv('POSTGRES_URL') or os.getenv('DATABASE_URL')
+    
+    # 2. SQLAlchemy Fix: postgres:// -> postgresql:// (Required for SQLAlchemy 1.4+)
+    if db_url and db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+        
+    SQLALCHEMY_DATABASE_URI = db_url or 'sqlite:///bms.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = 'static/uploads'
     PERMANENT_SESSION_LIFETIME = 604800 # 7 days in seconds, or handled by datetime timedelta usually

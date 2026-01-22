@@ -45,6 +45,24 @@ with app.app_context():
     except Exception as e:
         print(f"Database connection error: {e}")
 
+@app.context_processor
+def inject_db_status():
+    connected = False
+    db_type = "SQLite"
+    try:
+        from sqlalchemy import text
+        db.session.execute(text('SELECT 1'))
+        connected = True
+        # Determine DB type
+        uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        if 'postgresql' in uri:
+            db_type = "Postgres"
+        elif '/tmp/' in uri:
+            db_type = "SQLite (Temp)"
+    except:
+        connected = False
+    return dict(db_connected=connected, db_type=db_type)
+
 # Predefined book categories
 BOOK_CATEGORIES = [
     'Fiction', 'Non-Fiction', 'Science', 'Technology', 
