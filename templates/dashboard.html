@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>My Dashboard</h1>
+
+<div class="card">
+    <h2>My Shared Books</h2>
+    {% if my_books %}
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in my_books %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>
+                        <span class="badge {{ book.status|lower }}">{{ book.status }}</span>
+                    </td>
+                    <td>{{ book.type }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('delete_book', id=book.id) }}" style="display:inline;"
+                            onsubmit="return confirm('Are you sure?');">
+                            <button type="submit" class="btn-small"
+                                style="background: #cf6679; padding: 0.3rem 0.6rem; font-size: 0.8rem;">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted);">You haven't shared any books yet.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Incoming Requests (For My Books)</h2>
+    {% if received_requests %}
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Book</th>
+                    <th>Borrower</th>
+                    <th>Proposed Details</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in received_requests %}
+                <tr>
+                    <td>{{ req.book.title }}</td>
+                    <td>{{ req.borrower.username }}</td>
+                    <td>
+                        {% if req.book.type == 'Physical' %}
+                        <small>📅 {{ req.proposed_date }} <br> 🕒 {{ req.proposed_time }} <br> 📍 {{
+                            req.proposed_location }}</small>
+                        {% else %}
+                        Digital Access
+                        {% endif %}
+                    </td>
+                    <td>{{ req.request_status }}</td>
+                    <td>
+                        {% if req.request_status == 'Pending' %}
+                        <form method="POST" action="{{ url_for('handle_request', id=req.id) }}">
+                            <input type="hidden" name="action" value="accept">
+                            <button type="submit" class="btn-small" style="margin-bottom: 0.5rem;">Accept</button>
+                        </form>
+
+                        <form method="POST" action="{{ url_for('handle_request', id=req.id) }}">
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="btn-small"
+                                style="background:#cf6679; margin-bottom: 0.5rem;">Reject</button>
+                        </form>
+
+                        <!-- Suggestion Form Toggle -->
+                        <button type="button" class="btn-small" style="background:#0984e3;"
+                            onclick="document.getElementById('suggest-{{req.id}}').style.display = 'block'">Suggest
+                            Change</button>
+
+                        <div id="suggest-{{req.id}}"
+                            style="display:none; margin-top: 0.5rem; background: rgba(0,0,0,0.2); padding: 0.5rem;">
+                            <form method="POST" action="{{ url_for('handle_request', id=req.id) }}">
+                                <input type="hidden" name="action" value="suggest">
+                                <input type="date" name="date" value="{{ req.proposed_date }}" style="padding: 0.3rem;">
+                                <input type="time" name="time" value="{{ req.proposed_time }}" style="padding: 0.3rem;">
+                                <input type="text" name="location" value="{{ req.proposed_location }}"
+                                    placeholder="Location" style="padding: 0.3rem;">
+                                <button type="submit" class="btn-small">Send</button>
+                            </form>
+                        </div>
+
+                        {% elif req.request_status == 'Accepted' and req.book.status == 'Borrowed' and req.book.type ==
+                        'Physical' %}
+                        <form method="POST" action="{{ url_for('return_book', req_id=req.id) }}">
+                            <button type="submit" class="btn-small" style="background: #00b894;">Mark Returned</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted);">No incoming requests.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>My Borrowed Books</h2>
+    {% if borrowed_requests %}
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Book</th>
+                    <th>Owner</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in borrowed_requests %}
+                <tr>
+                    <td>{{ req.book.title }}</td>
+                    <td>{{ req.book.owner.username }}</td>
+                    <td>{{ req.book.type }}</td>
+                    <td>
+                        <span
+                            class="badge {% if req.book.status == 'Borrowed' %}borrowed{% elif req.book.status == 'Returned' %}available{% endif %}">{{
+                            req.book.status }}</span>
+                    </td>
+                    <td>
+                        {% if req.book.type == 'Digital' and req.book.status == 'Borrowed' %}
+                        {% if req.book.file_link %}
+                        <a href="{{ req.book.file_link }}" target="_blank" class="btn-small"
+                            style="text-decoration: none; background: #0984e3; color: white; display:inline-block;">Download
+                            Link</a>
+                        {% endif %}
+                        {% if req.book.filename %}
+                        <a href="{{ url_for('static', filename='uploads/' + req.book.filename) }}" target="_blank"
+                            class="btn-small"
+                            style="text-decoration: none; background: #0984e3; color: white; display:inline-block;">Download
+                            File</a>
+                        {% endif %}
+
+                        <form method="POST" action="{{ url_for('return_book', req_id=req.id) }}"
+                            style="display:inline; margin-left: 0.5rem;">
+                            <button type="submit" class="btn-small" style="background: #00b894;">Return</button>
+                        </form>
+                        {% elif req.book.type == 'Physical' %}
+                        <small>{{ req.request_status }}</small>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted);">You haven't borrowed any books.</p>
+    {% endif %}
+</div>
+{% endblock %}

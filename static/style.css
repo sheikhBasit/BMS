@@ -1,0 +1,366 @@
+:root {
+    --primary: #6c5ce7;
+    --primary-dark: #4834d4;
+    --secondary: #00cec9;
+    --text-white: #ffffff;
+    --text-muted: #dfe6e9;
+    --card-bg: rgba(255, 255, 255, 0.1);
+    --card-border: rgba(255, 255, 255, 0.2);
+    --shadow-light: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    --shadow-deep: 20px 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+body {
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-white);
+    background-color: #0f0c29;
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+        url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    perspective: 1000px;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* 3D Navigation */
+nav {
+    background: rgba(15, 12, 41, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--card-border);
+    padding: 1.2rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transform-style: preserve-3d;
+}
+
+.nav-brand {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a29bfe, #00cec9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-left: 2rem;
+    font-weight: 500;
+    position: relative;
+    transition: all 0.3s;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -5px;
+    left: 0;
+    background: var(--secondary);
+    transition: width 0.3s;
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+.nav-links a:hover {
+    color: #fff;
+    text-shadow: 0 0 10px rgba(0, 206, 201, 0.5);
+}
+
+/* 3D Container & Cards */
+.container {
+    padding: 3rem 5%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 3rem;
+    padding: 2rem 0;
+}
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-deep);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.27), box-shadow 0.4s;
+    transform-style: preserve-3d;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.card:hover {
+    transform: translateY(-15px) rotateX(5deg) rotateY(2deg);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 20px rgba(108, 92, 231, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.card h1,
+.card h2,
+.card h3 {
+    margin-top: 0;
+    background: linear-gradient(to right, #fff, #dfe6e9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transform: translateZ(20px);
+    /* 3D Text Pop */
+}
+
+/* Book Cover Simulation */
+.book-cover {
+    height: 220px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    transform: translateZ(10px);
+    transition: transform 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.book-cover::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+}
+
+.card:hover .book-cover {
+    transform: translateZ(30px) scale(1.05);
+}
+
+.book-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Forms & Inputs */
+input,
+select,
+textarea {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    transition: all 0.3s;
+    box-sizing: border-box;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(0, 0, 0, 0.5);
+    transform: scale(1.02);
+}
+
+/* Buttons */
+button {
+    background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+    border: none;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(108, 92, 231, 0.4);
+    transition: all 0.3s;
+    transform: translateZ(20px);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+button:hover {
+    transform: translateY(-3px) translateZ(25px);
+    box-shadow: 0 15px 30px rgba(108, 92, 231, 0.6);
+}
+
+.btn-small {
+    padding: 0.5rem 1.2rem;
+    width: auto;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+}
+
+.btn-small:hover {
+    background: var(--primary);
+    transform: translateY(-2px);
+}
+
+/* Badges */
+.badge {
+    padding: 0.4rem 1rem;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 0.5rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.badge.available {
+    background: linear-gradient(45deg, #00b894, #00cec9);
+    color: white;
+}
+
+.badge.borrowed {
+    background: linear-gradient(45deg, #fdcb6e, #e17055);
+    color: white;
+}
+
+.badge.returned {
+    background: linear-gradient(45deg, #636e72, #2d3436);
+    color: #dfe6e9;
+}
+
+.badge.physical {
+    background: rgba(255, 118, 117, 0.2);
+    color: #ff7675;
+    border: 1px solid #ff7675;
+}
+
+.badge.digital {
+    background: rgba(162, 155, 254, 0.2);
+    color: #a29bfe;
+    border: 1px solid #a29bfe;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+th {
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    padding: 1rem;
+    text-align: left;
+}
+
+td {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem 1rem;
+    transition: transform 0.2s;
+}
+
+tr td:first-child {
+    border-radius: 10px 0 0 10px;
+}
+
+tr td:last-child {
+    border-radius: 0 10px 10px 0;
+}
+
+tr:hover td {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.01);
+}
+
+/* Alerts */
+.alert {
+    background: rgba(255, 118, 117, 0.9);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 20px rgba(214, 48, 49, 0.3);
+    animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Auth Pages Specific */
+.auth-wrapper {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 450px;
+    background: rgba(20, 20, 30, 0.6);
+    backdrop-filter: blur(20px);
+}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <h1>Share a Book</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <label>Title</label>
+        <input type="text" name="title" placeholder="e.g. The Great Gatsby" required>
+
+        <label>Author</label>
+        <input type="text" name="author" placeholder="Author Name" required>
+
+        <label>Category</label>
+        <input type="text" name="category" placeholder="e.g. Fiction, Science, Art" required>
+
+        <label>Type</label>
+        <select name="type" id="typeSelect" onchange="toggleTypeFields()">
+            <option value="Physical">Physical Book</option>
+            <option value="Digital">Digital Resource</option>
+        </select>
+
+        <div id="digitalFields" style="display: none;">
+            <label>Upload File (PDF, etc.)</label>
+            <input type="file" name="file_upload">
+            <p style="text-align: center; margin: 0.5rem 0;">OR</p>
+            <label>External Download Link</label>
+            <input type="text" name="file_link" placeholder="https://example.com/resource">
+        </div>
+
+        <button type="submit">Add Book</button>
+    </form>
+</div>
+
+<script>
+    function toggleTypeFields() {
+        const type = document.getElementById('typeSelect').value;
+        const digital = document.getElementById('digitalFields');
+        if (type === 'Digital') {
+            digital.style.display = 'block';
+        } else {
+            digital.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

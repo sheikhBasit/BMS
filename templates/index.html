@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="text-align: center; margin-bottom: 4rem; perspective: 1000px;">
+    <h1
+        style="font-size: 3.5rem; margin-bottom: 1rem; text-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateZ(50px);">
+        Explore the <span style="color: #6c5ce7;">Library</span>
+    </h1>
+    <p
+        style="color: var(--text-muted); font-size: 1.2rem; max-width: 600px; margin: 0 auto 3rem; transform: translateZ(30px);">
+        Immerse yourself in a community of knowledge sharing. Borrow physical books or access digital resources
+        instantly.
+    </p>
+
+    <div class="card" style="max-width: 700px; margin: 0 auto; padding: 1.5rem; background: rgba(0,0,0,0.4);">
+        <form method="GET" action="{{ url_for('index') }}" style="display: flex; gap: 1rem; margin-bottom: 0;">
+            <input type="text" name="q" placeholder="Find your next read..."
+                style="margin-bottom: 0; background: rgba(255,255,255,0.1);">
+            <button type="submit" style="width: auto; padding: 0 3rem; border-radius: 12px;">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="grid">
+    {% for book in books %}
+    <div class="card" data-tilt>
+        <!-- Dynamic Book Cover using Picsum with Book ID seed -->
+        <div class="book-cover" style="background-image: url('https://picsum.photos/seed/{{ book.id }}/300/400');">
+            <div class="book-tag">
+                {{ book.category }}
+            </div>
+        </div>
+
+        <h2
+            style="font-size: 1.5rem; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            {{ book.title }}</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">by {{ book.author }}</p>
+
+        <div style="margin-bottom: 1.5rem;">
+            <span class="badge {{ book.type|lower }}">{{ book.type }}</span>
+            <span class="badge {{ book.status|lower }}">{{ book.status }}</span>
+        </div>
+
+        <div
+            style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+            <div style="display: flex; align-items: center;">
+                <div
+                    style="width: 30px; height: 30px; border-radius: 50%; background: #6c5ce7; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 0.8rem;">
+                    {{ book.owner.username[0]|upper }}
+                </div>
+                <small style="color: var(--text-muted);">{{ book.owner.username }}</small>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+                <!-- Like Button -->
+                <button class="btn-small" onclick="likeBook(this, {{ book.id }})"
+                    style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); width: auto; padding: 0.5rem;">
+                    ❤️ <span class="like-count" style="font-size: 0.8rem;">{{ book.likes or 0 }}</span>
+                </button>
+
+                {% if current_user.is_authenticated %}
+                {% if book.status == 'Available' and book.owner != current_user %}
+                {% if book.type == 'Physical' %}
+                <a href="{{ url_for('request_borrow', id=book.id) }}" style="text-decoration: none;">
+                    <button class="btn-small"
+                        style="background: var(--secondary); border: none; font-weight: bold; color: #000;">Request</button>
+                </a>
+                {% else %}
+                <a href="{{ url_for('request_borrow', id=book.id) }}" style="text-decoration: none;"
+                    onclick="celebrate()">
+                    <button class="btn-small" style="background: var(--primary); border: none;">Get Digital</button>
+                </a>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Load Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+    function likeBook(btn, id) {
+        // Prevent default if it was in a form (it's not but safe practice)
+        event.preventDefault();
+
+        fetch(`/api/like/${id}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                const countSpan = btn.querySelector('.like-count');
+                countSpan.innerText = data.likes;
+                btn.style.background = 'rgba(255, 107, 107, 0.4)';
+                btn.style.borderColor = '#ff6b6b';
+
+                // Confetti specific to button
+                const rect = btn.getBoundingClientRect();
+                const x = (rect.left + rect.width / 2) / window.innerWidth;
+                const y = (rect.top + rect.height / 2) / window.innerHeight;
+
+                confetti({
+                    particleCount: 20,
+                    spread: 40,
+                    origin: { x: x, y: y },
+                    disableForReducedMotion: true
+                });
+            })
+            .catch(err => console.error('Error liking:', err));
+    }
+
+    function celebrate() {
+        // Full screen celebration
+        var duration = 2 * 1000;
+        var end = Date.now() + duration;
+
+        (function frame() {
+            confetti({
+                particleCount: 5,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 }
+            });
+            confetti({
+                particleCount: 5,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 }
+            });
+
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        }());
+    }
+</script>

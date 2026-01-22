@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h1>Request Borrow: {{ book.title }}</h1>
+    <form method="POST">
+        <p>Proposed Date</p>
+        <input type="date" name="date" required>
+        <p>Proposed Time</p>
+        <input type="time" name="time" required>
+        {% if book.type == 'Physical' %}
+        <p>Proposed Location</p>
+        <input type="text" name="location" placeholder="e.g. Library Main Hall" required>
+        {% else %}
+        <input type="hidden" name="location" value="Digital Download">
+        {% endif %}
+        <button type="submit">Submit Request</button>
+    </form>
+</div>
+{% endblock %}

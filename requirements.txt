@@ -1,0 +1,6 @@
+Flask
+Flask-Login
+pytest
+Werkzeug
+Flask-SQLAlchemy
+cloudinary
