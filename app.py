@@ -5,11 +5,13 @@ from werkzeug.utils import secure_filename
 import os
 import datetime
 
+from config import Config
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'dev-key-123'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bms.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config.from_object(Config)
 
 db.init_app(app)
 login_manager = LoginManager()
@@ -23,35 +25,13 @@ def load_user(user_id):
 with app.app_context():
     db.create_all()
 
-@app.route('/')
-def index_root():
-    return redirect(url_for('index'))
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        role = 'Member' # Default role
-        
-        if User.query.filter_by(username=username).first():
-            flash('Username already exists')
-            return redirect(url_for('register'))
-            
-        user = User(username=username, email=email, role=role)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-        login_user(user)
-        return redirect(url_for('index'))
-    return render_template('register.html')
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        remember = True if request.form.get('remember') else False
+        
         user = User.query.filter_by(username=username).first()
         
         if user and user.check_password(password):
@@ -59,7 +39,7 @@ def login():
                 flash('Your account has been blocked. Please contact support.')
                 return redirect(url_for('login'))
                 
-            login_user(user)
+            login_user(user, remember=remember)
             return redirect(url_for('dashboard'))
         flash('Invalid username or password')
     return render_template('login.html')
@@ -79,15 +59,11 @@ def index():
         books = Book.query.all()
     return render_template('index.html', books=books)
 
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
-
 # Configure Cloudinary
 cloudinary.config(
-  cloud_name = "da7j3cbdg", # Replaced with a likely demo/placeholder or ask user
-  api_key = "945372436862786",
-  api_secret = "YYjM2eBCJso3umUx2idi2xbi0L0"
+  cloud_name = app.config['CLOUDINARY_CLOUD_NAME'],
+  api_key = app.config['CLOUDINARY_API_KEY'],
+  api_secret = app.config['CLOUDINARY_API_SECRET']
 )
 
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'epub', 'mobi'}

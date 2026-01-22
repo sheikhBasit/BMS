@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <!-- Vanilla Tilt for 3D Hover Effect -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -37,11 +38,33 @@
         </div>
     </nav>
     <div class="container">
-        {% with messages = get_flashed_messages() %}
+        <!-- SweetAlert2 placeholder -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-        {% for message in messages %}
-        <div class="alert">{{ message }}</div>
-        {% endfor %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                {% for category, message in messages %}
+                // Handle categories if present, default to success/info if simple string
+                var iconType = 'info';
+                // Simple heuristic since we didn't strictly use categories everywhere
+                var msg = "{{ message }}";
+                if (msg.toLowerCase().includes('error') || msg.toLowerCase().includes('failed')) iconType = 'error';
+                else if (msg.toLowerCase().includes('success')) iconType = 'success';
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: iconType,
+                    title: msg,
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: 'rgba(45, 52, 54, 0.9)',
+                    color: '#fff'
+                });
+                {% endfor %}
+            });
+        </script>
         {% endif %}
         {% endwith %}
         {% block content %}{% endblock %}

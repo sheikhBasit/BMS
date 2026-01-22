@@ -23,72 +23,77 @@
 </div>
 
 <div class="grid">
-    <div class="card">
-        <h2>Manage Users</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>User</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in users %}
-                <tr>
-                    <td>{{ user.username }}<br><small>{{ user.email }}</small></td>
-                    <td>{{ user.role }}</td>
-                    <td>
-                        {% if user.is_blocked %}
-                        <span style="color: red;">Blocked</span>
-                        {% else %}
-                        <span style="color: green;">Active</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if user.role != 'Admin' %}
-                        <form method="POST" action="{{ url_for('toggle_block_user', id=user.id) }}">
-                            <button type="submit" class="btn-small"
-                                style="background: {% if user.is_blocked %}#00b894{% else %}#cf6679{% endif %};">
-                                {% if user.is_blocked %}Unblock{% else %}Block{% endif %}
-                            </button>
-                        </form>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="card" data-tilt style="transform-style: preserve-3d;">
+        <h2 style="transform: translateZ(30px);">Manage Users</h2>
+        <div style="overflow-x: auto; transform: translateZ(20px);">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr style="transform: translateZ(10px);">
+                        <td>{{ user.username }}<br><small>{{ user.email }}</small></td>
+                        <td>{{ user.role }}</td>
+                        <td>
+                            {% if user.is_blocked %}
+                            <span style="color: red;">Blocked</span>
+                            {% else %}
+                            <span style="color: green;">Active</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.role != 'Admin' %}
+                            <form method="POST" action="{{ url_for('toggle_block_user', id=user.id) }}">
+                                <button type="submit" class="btn-small"
+                                    style="background: {% if user.is_blocked %}#00b894{% else %}#cf6679{% endif %}; width: auto;">
+                                    {% if user.is_blocked %}Unblock{% else %}Block{% endif %}
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="card">
-        <h2>Manage Books</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Owner</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for book in books %}
-                <tr>
-                    <td>{{ book.title }}</td>
-                    <td>{{ book.author }}</td>
-                    <td>{{ book.owner.username }}</td>
-                    <td>
-                        <form method="POST" action="{{ url_for('delete_book_admin', id=book.id) }}"
-                            onsubmit="return confirm('Delete this book universally?');">
-                            <button type="submit" class="btn-small" style="background: #d63031;">Remove</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="card" data-tilt style="transform-style: preserve-3d;">
+        <h2 style="transform: translateZ(30px);">Manage Books</h2>
+        <div style="overflow-x: auto; transform: translateZ(20px);">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Owner</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in books %}
+                    <tr style="transform: translateZ(10px);">
+                        <td>{{ book.title }}</td>
+                        <td>{{ book.author }}</td>
+                        <td>{{ book.owner.username }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('delete_book_admin', id=book.id) }}"
+                                onsubmit="return confirm('Delete this book universally?');">
+                                <button type="submit" class="btn-small"
+                                    style="background: #d63031; width: auto;">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
