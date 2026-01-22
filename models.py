@@ -24,6 +24,8 @@ class Book(db.Model):
     author = db.Column(db.String(200), nullable=False)
     category = db.Column(db.String(100), nullable=False)
     type = db.Column(db.String(20), nullable=False) # Physical or Digital
+    location = db.Column(db.String(200), nullable=True) # New: Physical availability notes
+    description = db.Column(db.Text, nullable=True) # New: Book description
     file_link = db.Column(db.String(500), nullable=True) # Link to digital resource
     filename = db.Column(db.String(500), nullable=True) # Uploaded file path
     likes = db.Column(db.Integer, default=0) # New Interactive Feature

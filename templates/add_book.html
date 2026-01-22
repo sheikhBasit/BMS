@@ -12,11 +12,20 @@
         <label>Category</label>
         <input type="text" name="category" placeholder="e.g. Fiction, Science, Art" required>
 
+        <label>Description</label>
+        <textarea name="description" rows="3" placeholder="Brief description..."
+            style="width: 100%; border-radius: 10px; padding: 1rem; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; margin-bottom: 1.5rem;"></textarea>
+
         <label>Type</label>
         <select name="type" id="typeSelect" onchange="toggleTypeFields()">
             <option value="Physical">Physical Book</option>
             <option value="Digital">Digital Resource</option>
         </select>
+
+        <div id="physicalFields">
+            <label>Default Location / Availability Note</label>
+            <input type="text" name="location" placeholder="e.g. Shelf 2, or 'Available Weekends'">
+        </div>
 
         <div id="digitalFields" style="display: none;">
             <label>Upload File (PDF, etc.)</label>
@@ -34,10 +43,14 @@
     function toggleTypeFields() {
         const type = document.getElementById('typeSelect').value;
         const digital = document.getElementById('digitalFields');
+        const physical = document.getElementById('physicalFields');
+
         if (type === 'Digital') {
             digital.style.display = 'block';
+            physical.style.display = 'none';
         } else {
             digital.style.display = 'none';
+            physical.style.display = 'block';
         }
     }
 </script>

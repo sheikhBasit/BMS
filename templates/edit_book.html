@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card card" data-tilt>
+        <h1 style="text-align: center; margin-bottom: 2rem;">Edit Book</h1>
+        <form method="POST">
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Title</label>
+            <input type="text" name="title" value="{{ book.title }}" required>
+
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Author</label>
+            <input type="text" name="author" value="{{ book.author }}" required>
+
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Category</label>
+            <input type="text" name="category" value="{{ book.category }}" required>
+
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Description</label>
+            <textarea name="description" rows="3"
+                style="width: 100%; border-radius: 10px; padding: 1rem; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white;">{{ book.description or '' }}</textarea>
+
+            {% if book.type == 'Physical' %}
+            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted); margin-top: 1rem;">Default
+                Location / Availability Notes</label>
+            <input type="text" name="location" value="{{ book.location or '' }}"
+                placeholder="e.g. City Library, or Available Weekends">
+            {% endif %}
+
+            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button type="submit">Update Book</button>
+                <a href="{{ url_for('dashboard') }}" style="text-decoration: none; width: 100%;">
+                    <button type="button" style="background: var(--text-muted); color: #000;">Cancel</button>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

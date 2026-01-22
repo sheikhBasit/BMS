@@ -22,8 +22,31 @@ login_manager.init_app(app)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-with app.app_context():
     db.create_all()
+
+@app.route('/')
+def index_root():
+    return redirect(url_for('index'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role = 'Member' # Default role
+        
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists')
+            return redirect(url_for('register'))
+            
+        user = User(username=username, email=email, role=role)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        login_user(user)
+        return redirect(url_for('index'))
+    return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -109,11 +132,48 @@ def add_book():
                  flash('For digital books, you must upload a file or provide a link.')
                  return redirect(url_for('add_book'))
         
-        book = Book(title=title, author=author, category=category, type=b_type, file_link=final_file_link, filename=filename, owner=current_user)
+        # New fields: location, description
+        location_note = request.form.get('location')
+        description = request.form.get('description')
+
+        book = Book(
+            title=title, 
+            author=author, 
+            category=category, 
+            type=b_type, 
+            file_link=final_file_link, 
+            filename=filename, 
+            owner=current_user,
+            location=location_note,
+            description=description
+        )
         db.session.add(book)
         db.session.commit()
         return redirect(url_for('index'))
     return render_template('add_book.html')
+
+@app.route('/edit_book/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_book(id):
+    book = Book.query.get_or_404(id)
+    if book.owner != current_user:
+        return "Unauthorized", 403
+    
+    if request.method == 'POST':
+        book.title = request.form.get('title')
+        book.author = request.form.get('author')
+        book.category = request.form.get('category')
+        book.description = request.form.get('description')
+        book.location = request.form.get('location')
+        
+        # We generally don't allow changing type/file here for simplicity, 
+        # or it would require re-validating uploads. Keeping it simple as per reqs (Edit details).
+        
+        db.session.commit()
+        flash('Book updated successfully.')
+        return redirect(url_for('dashboard'))
+        
+    return render_template('edit_book.html', book=book)
 
 @app.route('/request_borrow/<int:id>', methods=['GET', 'POST'])
 @login_required
