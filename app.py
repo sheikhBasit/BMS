@@ -128,23 +128,23 @@ def add_book():
             if uploaded_file and uploaded_file.filename != '':
                 if allowed_file(uploaded_file.filename):
                     try:
+                        # Ensure uploads directory exists
+                        upload_dir = os.path.join('static', 'uploads')
+                        os.makedirs(upload_dir, exist_ok=True)
+                        
                         # Local Upload Logic
                         filename = secure_filename(uploaded_file.filename)
                         # Ensure filename is unique to prevent overwrite
                         import uuid
-                        filename = f"{uuid.uuid4().hex}_{filename}"
+                        unique_filename = f"{uuid.uuid4().hex}_{filename}"
                         
-                        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        file_path = os.path.join(upload_dir, unique_filename)
                         uploaded_file.save(file_path)
                         
-                        # Set file_link to the local static route
-                        # Note: We store the filename, but for the link we want the URL
-                        # But typically we just construct the URL in the template using the filename.
-                        # However, for consistency with the 'file_link' field which might be an external URL...
-                        # We will store the relative URL in file_link if local.
-                        
-                        # Actually keeping filename is good.
-                        final_file_link = url_for('static', filename='uploads/' + filename) 
+                        # Store the path that will work with url_for('static')
+                        # This stores: /static/uploads/filename.pdf
+                        final_file_link = f"/static/uploads/{unique_filename}"
+                        filename = unique_filename
                         
                     except Exception as e:
                         flash(f'Upload failed: {str(e)}')
@@ -352,10 +352,49 @@ def toggle_block_user(id):
 @app.route('/api/like/<int:book_id>', methods=['POST'])
 @login_required
 def like_book(book_id):
+    from models import BookLike
     book = Book.query.get_or_404(book_id)
+    
+    # Check if user already liked this book
+    existing_like = BookLike.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+    
+    if existing_like:
+        # Unlike: Remove the like
+        db.session.delete(existing_like)
+        book.likes = max((book.likes or 1) - 1, 0)  # Prevent negative likes
+        db.session.commit()
+        return {'likes': book.likes, 'user_liked': False, 'action': 'unliked'}
+    
+    # Like: Add new like
+    new_like = BookLike(user_id=current_user.id, book_id=book_id)
     book.likes = (book.likes or 0) + 1
+    db.session.add(new_like)
     db.session.commit()
-    return {'likes': book.likes}
+    return {'likes': book.likes, 'user_liked': True, 'action': 'liked'}
+
+@app.route('/book/<int:id>')
+def book_detail(id):
+    book = Book.query.get_or_404(id)
+    if book.is_deleted:
+        flash('This book is no longer available.')
+        return redirect(url_for('index'))
+    
+    # Check if current user has liked this book
+    user_has_liked = False
+    if current_user.is_authenticated:
+        from models import BookLike
+        user_has_liked = BookLike.query.filter_by(user_id=current_user.id, book_id=id).first() is not None
+    
+    return render_template('book_detail.html', book=book, user_has_liked=user_has_liked)
+
+@app.route('/my_likes')
+@login_required
+def my_likes():
+    from models import BookLike
+    # Get all books the current user has liked
+    liked_book_ids = [like.book_id for like in BookLike.query.filter_by(user_id=current_user.id).all()]
+    liked_books = Book.query.filter(Book.id.in_(liked_book_ids), Book.is_deleted == False).all() if liked_book_ids else []
+    return render_template('my_likes.html', books=liked_books)
 
 @app.route('/delete_book/<int:id>', methods=['POST'])
 @login_required

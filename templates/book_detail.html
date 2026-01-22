@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <a href="{{ url_for('index') }}"
+        style="color: var(--secondary); text-decoration: none; display: inline-block; margin-bottom: 2rem;">
+        ← Back to Library
+    </a>
+
+    <div class="card" style="padding: 3rem;">
+        <!-- Book Cover -->
+        <div style="display: grid; grid-template-columns: 300px 1fr; gap: 3rem;">
+            <div>
+                <div class="book-cover"
+                    style="background-image: url('https://picsum.photos/seed/{{ book.id }}/300/400'); height: 400px; margin-bottom: 1.5rem;">
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    {% if current_user.is_authenticated and book.owner != current_user %}
+                    {% if book.status == 'Available' %}
+                    <a href="{{ url_for('request_borrow', id=book.id) }}" style="text-decoration: none;">
+                        <button style="width: 100%;">
+                            {% if book.type == 'Digital' %}Get Digital Copy{% else %}Request Borrow{% endif %}
+                        </button>
+                    </a>
+                    {% endif %}
+
+                    <button onclick="likeBook(this, {{ book.id }})" id="likeBtn"
+                        style="background: {% if user_has_liked %}rgba(255, 107, 107, 0.4){% else %}rgba(255,255,255,0.1){% endif %}; 
+                                   border: 1px solid {% if user_has_liked %}#ff6b6b{% else %}rgba(255,255,255,0.2){% endif %};">
+                        ❤️ <span id="likeCount">{{ book.likes or 0 }}</span> Likes
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Book Details -->
+            <div>
+                <h1 style="margin-top: 0;">{{ book.title }}</h1>
+                <p style="font-size: 1.3rem; color: var(--text-muted); margin-bottom: 2rem;">by {{ book.author }}</p>
+
+                <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                    <span class="badge {{ book.type|lower }}">{{ book.type }}</span>
+                    <span class="badge {{ book.status|lower }}">{{ book.status }}</span>
+                    <span class="badge"
+                        style="background: rgba(108, 92, 231, 0.2); color: #6c5ce7; border: 1px solid #6c5ce7;">{{
+                        book.category }}</span>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+                    <h3 style="margin-top: 0;">Description</h3>
+                    <p style="line-height: 1.8;">{{ book.description or 'No description available.' }}</p>
+                </div>
+
+                {% if book.type == 'Physical' and book.location %}
+                <div style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+                    <h3 style="margin-top: 0;">📍 Location</h3>
+                    <p>{{ book.location }}</p>
+                </div>
+                {% endif %}
+
+                <div style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 12px;">
+                    <h3 style="margin-top: 0;">Owner</h3>
+                    <div style="display: flex; align-items: center;">
+                        <div
+                            style="width: 40px; height: 40px; border-radius: 50%; background: #6c5ce7; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 1.2rem;">
+                            {{ book.owner.username[0]|upper }}
+                        </div>
+                        <span>{{ book.owner.username }}</span>
+                    </div>
+                </div>
+
+                <!-- Digital Book Viewer -->
+                {% if book.type == 'Digital' and book.file_link %}
+                <div style="margin-top: 2rem;">
+                    <h3>Preview / Download</h3>
+                    {% if book.file_link.endswith('.pdf') or 'pdf' in book.file_link.lower() %}
+                    <iframe src="{{ book.file_link }}"
+                        style="width: 100%; height: 600px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;"></iframe>
+                    {% endif %}
+                    <a href="{{ book.file_link }}" target="_blank"
+                        style="display: inline-block; margin-top: 1rem; color: var(--secondary);">
+                        → Download / Open File
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+    function likeBook(btn, id) {
+        event.preventDefault();
+
+        fetch(`/api/like/${id}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                const countSpan = document.getElementById('likeCount');
+                countSpan.innerText = data.likes;
+
+                if (data.action === 'liked') {
+                    btn.style.background = 'rgba(255, 107, 107, 0.4)';
+                    btn.style.borderColor = '#ff6b6b';
+
+                    confetti({
+                        particleCount: 30,
+                        spread: 60,
+                        origin: { y: 0.6 },
+                        disableForReducedMotion: true
+                    });
+                } else if (data.action === 'unliked') {
+                    btn.style.background = 'rgba(255,255,255,0.1)';
+                    btn.style.borderColor = 'rgba(255,255,255,0.2)';
+                }
+            })
+            .catch(err => console.error('Error liking:', err));
+    }
+</script>
+{% endblock %}
