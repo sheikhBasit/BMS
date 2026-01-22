@@ -47,6 +47,7 @@ nav {
     font-weight: 800;
     background: linear-gradient(135deg, #a29bfe, #00cec9);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -105,8 +106,7 @@ nav {
     padding: 2rem;
     backdrop-filter: blur(10px);
     box-shadow: var(--shadow-deep);
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.27), box-shadow 0.4s;
-    transform-style: preserve-3d;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     position: relative;
     /* height: 100%; Removed to prevent overlap if content differs */
     display: flex;
@@ -179,9 +179,9 @@ nav {
 }
 
 .card:hover {
-    transform: translateY(-15px) rotateX(5deg) rotateY(2deg);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 20px rgba(108, 92, 231, 0.3);
-    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 15px rgba(108, 92, 231, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .card h1,
@@ -190,9 +190,8 @@ nav {
     margin-top: 0;
     background: linear-gradient(to right, #fff, #dfe6e9);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
-    transform: translateZ(20px);
-    /* 3D Text Pop */
 }
 
 /* Book Cover Simulation */
@@ -203,8 +202,7 @@ nav {
     border-radius: 12px;
     margin-bottom: 1.5rem;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-    transform: translateZ(10px);
-    transition: transform 0.3s;
+    transition: transform 0.3s ease;
     position: relative;
     overflow: hidden;
 }
@@ -220,7 +218,7 @@ nav {
 }
 
 .card:hover .book-cover {
-    transform: translateZ(30px) scale(1.05);
+    transform: scale(1.03);
 }
 
 .book-tag {

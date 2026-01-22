@@ -5,13 +5,17 @@
         <h1 style="text-align: center; margin-bottom: 2rem;">Edit Book</h1>
         <form method="POST">
             <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Title</label>
-            <input type="text" name="title" value="{{ book.title }}" required>
+            <input type="text" name="title" value="{{ book.title }}" minlength="2" maxlength="200" required>
 
             <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Author</label>
-            <input type="text" name="author" value="{{ book.author }}" required>
+            <input type="text" name="author" value="{{ book.author }}" minlength="2" maxlength="200" required>
 
             <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Category</label>
-            <input type="text" name="category" value="{{ book.category }}" required>
+            <select name="category" required>
+                {% for cat in categories %}
+                <option value="{{ cat }}" {% if cat==book.category %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
 
             <label style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Description</label>
             <textarea name="description" rows="3"

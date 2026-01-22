@@ -1,25 +1,43 @@
 {% extends 'base.html' %}
 {% block body_class %}page-admin{% endblock %}
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <h1>Admin Overview</h1>
 
 <!-- Metrics Cards -->
 <div class="grid" style="margin-bottom: 3rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-    <div class="card" style="text-align: center; border-left: 5px solid #00b894;">
+    <div class="card"
+        style="text-align: center; border-left: 5px solid #00b894; background: linear-gradient(135deg, rgba(0,184,148,0.1), transparent);">
         <h3 style="font-size: 3rem; margin-bottom: 0;">{{ total_users }}</h3>
         <p style="color: var(--text-muted); margin-top: 0;">Total Users</p>
     </div>
-    <div class="card" style="text-align: center; border-left: 5px solid #0984e3;">
+    <div class="card"
+        style="text-align: center; border-left: 5px solid #0984e3; background: linear-gradient(135deg, rgba(9,132,227,0.1), transparent);">
         <h3 style="font-size: 3rem; margin-bottom: 0;">{{ total_books }}</h3>
         <p style="color: var(--text-muted); margin-top: 0;">Total Books</p>
     </div>
-    <div class="card" style="text-align: center; border-left: 5px solid #6c5ce7;">
+    <div class="card"
+        style="text-align: center; border-left: 5px solid #6c5ce7; background: linear-gradient(135deg, rgba(108,92,231,0.1), transparent);">
         <h3 style="font-size: 3rem; margin-bottom: 0;">{{ total_requests }}</h3>
         <p style="color: var(--text-muted); margin-top: 0;">Total Requests</p>
     </div>
-    <div class="card" style="text-align: center; border-left: 5px solid #fdcb6e;">
+    <div class="card"
+        style="text-align: center; border-left: 5px solid #fdcb6e; background: linear-gradient(135deg, rgba(253,203,110,0.1), transparent);">
         <h3 style="font-size: 3rem; margin-bottom: 0;">{{ active_borrows }}</h3>
         <p style="color: var(--text-muted); margin-top: 0;">Active Borrows</p>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div
+    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+    <div class="card" style="padding: 2rem;">
+        <h3 style="margin-top: 0;">Books by Type</h3>
+        <canvas id="bookTypeChart"></canvas>
+    </div>
+    <div class="card" style="padding: 2rem;">
+        <h3 style="margin-top: 0;">Book Status</h3>
+        <canvas id="bookStatusChart"></canvas>
     </div>
 </div>
 
@@ -101,4 +119,59 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Books by Type Chart
+    const typeCtx = document.getElementById('bookTypeChart').getContext('2d');
+    new Chart(typeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Physical', 'Digital'],
+            datasets: [{
+                data: [{{ physical_books }}, {{ digital_books }}],
+        backgroundColor: ['#ff7675', '#a29bfe'],
+        borderColor: 'rgba(255,255,255,0.2)',
+        borderWidth: 2
+    }]
+        },
+        options: {
+        responsive: true,
+        plugins: {
+            legend: { labels: { color: '#fff', font: { size: 14 } } }
+        }
+    }
+    });
+
+    // Book Status Chart
+    const statusCtx = document.getElementById('bookStatusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Available', 'Borrowed', 'Returned'],
+            datasets: [{
+                label: 'Books',
+                data: [{{ available_books }}, {{ borrowed_books }}, {{ returned_books }}],
+        backgroundColor: ['#00b894', '#fdcb6e', '#636e72'],
+        borderWidth: 0
+            }]
+        },
+        options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+            },
+            x: {
+                ticks: { color: '#fff' },
+                grid: { color: 'rgba(255,255,255,0.1)' }
+            }
+        },
+        plugins: {
+            legend: { labels: { color: '#fff' } }
+        }
+    }
+    });
+</script>
 {% endblock %}

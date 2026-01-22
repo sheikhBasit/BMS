@@ -3,7 +3,7 @@
 {% block content %}
 <h1>My Dashboard</h1>
 
-<div class="grid">
+<div style="display: flex; flex-direction: column; gap: 2rem; max-width: 1200px; margin: 0 auto;">
     <div class="card" data-tilt style="transform-style: preserve-3d; margin-bottom: 0;">
         <h2 style="transform: translateZ(30px);">My Shared Books</h2>
         {% if my_books %}

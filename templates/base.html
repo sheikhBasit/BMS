@@ -47,27 +47,47 @@
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 {% for category, message in messages %}
-                // Handle categories if present, default to success/info if simple string
+                // Determine icon and styling based on message content
                 var iconType = 'info';
-                // Simple heuristic since we didn't strictly use categories everywhere
+                var bgColor = 'rgba(45, 52, 54, 0.95)';
                 var msg = "{{ message }}";
-                if (msg.toLowerCase().includes('error') || msg.toLowerCase().includes('failed')) iconType = 'error';
-                else if (msg.toLowerCase().includes('success')) iconType = 'success';
+
+                if (msg.toLowerCase().includes('error') || msg.toLowerCase().includes('failed') || msg.toLowerCase().includes('invalid')) {
+                    iconType = 'error';
+                    bgColor = 'rgba(214, 48, 49, 0.95)';
+                } else if (msg.toLowerCase().includes('success') || msg.toLowerCase().includes('updated') || msg.toLowerCase().includes('added')) {
+                    iconType = 'success';
+                    bgColor = 'rgba(0, 184, 148, 0.95)';
+                } else if (msg.toLowerCase().includes('warning') || msg.toLowerCase().includes('already')) {
+                    iconType = 'warning';
+                    bgColor = 'rgba(253, 203, 110, 0.95)';
+                }
 
                 Swal.fire({
-                    toast: true,
-                    position: 'top-end',
                     icon: iconType,
                     title: msg,
-                    showConfirmButton: false,
-                    timer: 3000,
+                    toast: false,
+                    position: 'center',
+                    showConfirmButton: true,
+                    confirmButtonColor: '#6c5ce7',
+                    timer: 4000,
                     timerProgressBar: true,
-                    background: 'rgba(45, 52, 54, 0.9)',
-                    color: '#fff'
+                    background: bgColor,
+                    color: '#fff',
+                    customClass: {
+                        popup: 'custom-swal-popup'
+                    }
                 });
                 {% endfor %}
             });
         </script>
+        <style>
+            .custom-swal-popup {
+                border-radius: 16px !important;
+                backdrop-filter: blur(10px);
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+            }
+        </style>
         {% endif %}
         {% endwith %}
         {% block content %}{% endblock %}

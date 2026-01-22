@@ -4,13 +4,18 @@
     <h1>Share a Book</h1>
     <form method="POST" enctype="multipart/form-data">
         <label>Title</label>
-        <input type="text" name="title" placeholder="e.g. The Great Gatsby" required>
+        <input type="text" name="title" placeholder="e.g. The Great Gatsby" minlength="2" maxlength="200" required>
 
         <label>Author</label>
-        <input type="text" name="author" placeholder="Author Name" required>
+        <input type="text" name="author" placeholder="Author Name" minlength="2" maxlength="200" required>
 
         <label>Category</label>
-        <input type="text" name="category" placeholder="e.g. Fiction, Science, Art" required>
+        <select name="category" required>
+            <option value="">Select a category...</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}">{{ cat }}</option>
+            {% endfor %}
+        </select>
 
         <label>Description</label>
         <textarea name="description" rows="3" placeholder="Brief description..."

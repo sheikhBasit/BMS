@@ -4,9 +4,9 @@
     <h1>Request Borrow: {{ book.title }}</h1>
     <form method="POST">
         <p>Proposed Date</p>
-        <input type="date" name="date" required>
+        <input type="date" name="date" id="borrowDate" required>
         <p>Proposed Time</p>
-        <input type="time" name="time" required>
+        <input type="time" name="time" id="borrowTime" required>
         {% if book.type == 'Physical' %}
         <p>Proposed Location</p>
         <input type="text" name="location" placeholder="e.g. Library Main Hall" required>
@@ -16,4 +16,27 @@
         <button type="submit">Submit Request</button>
     </form>
 </div>
+
+<script>
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('borrowDate').setAttribute('min', today);
+
+    // Validate that date is not in the past when form is submitted
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const selectedDate = document.getElementById('borrowDate').value;
+        const selectedTime = document.getElementById('borrowTime').value;
+
+        if (selectedDate === today && selectedTime) {
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+            if (selectedTime < currentTime) {
+                e.preventDefault();
+                alert('Please select a future time. The selected time has already passed today.');
+                return false;
+            }
+        }
+    });
+</script>
 {% endblock %}

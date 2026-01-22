@@ -29,6 +29,14 @@ def load_user(user_id):
 
     db.create_all()
 
+# Predefined book categories
+BOOK_CATEGORIES = [
+    'Fiction', 'Non-Fiction', 'Science', 'Technology', 
+    'History', 'Biography', 'Self-Help', 'Business',
+    'Art', 'Philosophy', 'Religion', 'Mystery',
+    'Romance', 'Thriller', 'Fantasy', 'Other'
+]
+
 @app.route('/')
 def index_root():
     return redirect(url_for('index'))
@@ -41,9 +49,22 @@ def register():
         password = request.form.get('password')
         role = 'Member' # Default role
         
+        # Validation
         if not username or not email or not password:
              flash('All fields are required.')
              return redirect(url_for('register'))
+        
+        if len(username) < 3 or len(username) > 20:
+            flash('Username must be between 3 and 20 characters.')
+            return redirect(url_for('register'))
+        
+        if not '@' in email or '.' not in email:
+            flash('Please enter a valid email address.')
+            return redirect(url_for('register'))
+        
+        if len(password) < 6:
+            flash('Password must be at least 6 characters long.')
+            return redirect(url_for('register'))
 
         if User.query.filter((User.username == username) | (User.email == email)).first():
             flash('Username or Email already exists')
@@ -117,6 +138,18 @@ def add_book():
         if not title or not author or not category:
              flash('All fields are required.')
              return redirect(url_for('add_book'))
+        
+        if len(title) < 2 or len(title) > 200:
+            flash('Title must be between 2 and 200 characters.')
+            return redirect(url_for('add_book'))
+        
+        if len(author) < 2 or len(author) > 200:
+            flash('Author name must be between 2 and 200 characters.')
+            return redirect(url_for('add_book'))
+        
+        if category not in BOOK_CATEGORIES:
+            flash('Please select a valid category.')
+            return redirect(url_for('add_book'))
 
         file_link = request.form.get('file_link')
         uploaded_file = request.files.get('file_upload')
@@ -174,7 +207,7 @@ def add_book():
         db.session.add(book)
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('add_book.html')
+    return render_template('add_book.html', categories=BOOK_CATEGORIES)
 
 @app.route('/edit_book/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -185,11 +218,34 @@ def edit_book(id):
         return "Unauthorized", 403
     
     if request.method == 'POST':
-        book.title = request.form.get('title', '').strip()
-        book.author = request.form.get('author', '').strip()
-        book.category = request.form.get('category', '').strip()
-        book.description = request.form.get('description', '').strip()
-        book.location = request.form.get('location', '').strip()
+        title = request.form.get('title', '').strip()
+        author = request.form.get('author', '').strip()
+        category = request.form.get('category', '').strip()
+        description = request.form.get('description', '').strip()
+        location = request.form.get('location', '').strip()
+        
+        # Validation
+        if not title or not author or not category:
+            flash('Title, Author, and Category are required.')
+            return redirect(url_for('edit_book', id=id))
+        
+        if len(title) < 2 or len(title) > 200:
+            flash('Title must be between 2 and 200 characters.')
+            return redirect(url_for('edit_book', id=id))
+        
+        if len(author) < 2 or len(author) > 200:
+            flash('Author name must be between 2 and 200 characters.')
+            return redirect(url_for('edit_book', id=id))
+        
+        if category not in BOOK_CATEGORIES:
+            flash('Please select a valid category.')
+            return redirect(url_for('edit_book', id=id))
+        
+        book.title = title
+        book.author = author
+        book.category = category
+        book.description = description
+        book.location = location
         
         db.session.commit()
         flash('Book updated successfully.')
@@ -197,7 +253,7 @@ def edit_book(id):
              return redirect(url_for('admin_dashboard'))
         return redirect(url_for('dashboard'))
         
-    return render_template('edit_book.html', book=book)
+    return render_template('edit_book.html', book=book, categories=BOOK_CATEGORIES)
 
 @app.route('/request_borrow/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -313,13 +369,26 @@ def admin_dashboard():
     total_requests = BorrowRequest.query.count()
     active_borrows = Book.query.filter_by(status='Borrowed', is_deleted=False).count()
     
+    # Chart data
+    physical_books = Book.query.filter_by(type='Physical', is_deleted=False).count()
+    digital_books = Book.query.filter_by(type='Digital', is_deleted=False).count()
+    
+    available_books = Book.query.filter_by(status='Available', is_deleted=False).count()
+    borrowed_books = Book.query.filter_by(status='Borrowed', is_deleted=False).count()
+    returned_books = Book.query.filter_by(status='Returned', is_deleted=False).count()
+    
     return render_template('admin.html', 
         users=users, 
         books=books,
         total_users=total_users,
         total_books=total_books,
         total_requests=total_requests,
-        active_borrows=active_borrows
+        active_borrows=active_borrows,
+        physical_books=physical_books,
+        digital_books=digital_books,
+        available_books=available_books,
+        borrowed_books=borrowed_books,
+        returned_books=returned_books
     )
 
 @app.route('/admin/delete_book/<int:id>', methods=['POST'])
