@@ -161,8 +161,9 @@ def logout():
 
 @app.route('/index')
 def index():
-    # Call seeding/readiness check before any logic
-    ensure_ready()
+    # Only seed if the database is literally empty
+    if Book.query.count() == 0:
+        ensure_ready()
     
     query = request.args.get('q', '').strip()
     if query:

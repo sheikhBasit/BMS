@@ -152,4 +152,4 @@ def seed_database(force_reset=False):
         print("Seeding/Check Complete!")
 
 if __name__ == '__main__':
-    seed_database(force_reset=True)
+    seed_database(force_reset=False)
