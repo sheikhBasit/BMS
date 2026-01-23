@@ -37,6 +37,11 @@ def seed_database(force_reset=False):
                 db.session.add(u)
                 db.session.commit()
                 print(f"Created user: {username}")
+            else:
+                # Normalize role for existing users
+                if u.role != role.lower():
+                    u.role = role.lower()
+                    db.session.commit()
             users_objs.append(u)
         
         # Ensure we have the user objects available
@@ -125,17 +130,24 @@ def seed_database(force_reset=False):
         db.session.commit()
         print(f"Added {books_added} new books.")
         
-        # Borrow Requests: Create if none exist, or if we just added books
-        if BorrowRequest.query.count() == 0:
-            print("Creating sample requests...")
-            current_books = Book.query.filter_by(type='Physical').all()
+        # Borrow Requests: Ensure we have at least 15 requests
+        request_count = BorrowRequest.query.count()
+        if request_count < 15:
+            print(f"Current requests: {request_count}. Adding more to reach target...")
+            current_books = Book.query.filter_by(type='physical', is_deleted=False).all()
             non_admins = [u for u in users_objs if u.username != 'admin']
             if current_books and non_admins:
-                for _ in range(10): # Create 10 requests
+                added_reqs = 0
+                for _ in range(20): # Try multiple times to get unique pairs
+                    if request_count + added_reqs >= 15:
+                        break
                     book = random.choice(current_books)
                     borrower = random.choice(non_admins)
                     
-                    if book.owner != borrower:
+                    # Check if this borrower already requested this book
+                    existing = BorrowRequest.query.filter_by(book_id=book.id, borrower_id=borrower.id).first()
+                    
+                    if book.owner != borrower and not existing:
                         req = BorrowRequest(
                             book=book,
                             borrower=borrower,
@@ -145,8 +157,21 @@ def seed_database(force_reset=False):
                             request_status="pending"
                         )
                         db.session.add(req)
+                        added_reqs += 1
                 db.session.commit()
-                print("Sample requests created.")
+                print(f"Added {added_reqs} sample requests.")
+
+        # Re-distribute Ownership if needed
+        # Often books are seeded as 'admin', let's spread the love
+        admin_books = Book.query.filter(Book.owner.has(username='admin')).all()
+        if len(admin_books) > 5:
+            print(f"Admin owns {len(admin_books)} books. Re-distributing...")
+            non_admins = [u for u in users_objs if u.username != 'admin']
+            if non_admins:
+                for book in admin_books[5:]: # Keep only 5 for admin
+                    book.owner = random.choice(non_admins)
+                db.session.commit()
+                print("Ownership re-distributed.")
         
         print("Seeding/Check Complete!")
 

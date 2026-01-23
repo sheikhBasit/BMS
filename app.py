@@ -546,9 +546,14 @@ def admin_seed_data():
     ensure_ready()
     try:
         from seed_db import seed_database
-        # Default to safe mode (non-destructive)
         seed_database(force_reset=False)
-        return "Database Checked and Seeded Successfully (Preserving custom data)!", 200
+        
+        # Fresh counts
+        u_count = User.query.count()
+        b_count = Book.query.count()
+        r_count = BorrowRequest.query.count()
+        
+        return f"Database Seeded! Status: {u_count} Users, {b_count} Books, {r_count} Requests.", 200
     except Exception as e:
         return f"Seeding failed: {str(e)}", 500
 
