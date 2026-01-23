@@ -3,7 +3,7 @@ import requests
 import random
 import time
 
-BASE_URL = "https://bms-bice-alpha.vercel.app"
+BASE_URL = "https://bms-three-peach.vercel.app"
 
 # Data for seeding
 USERNAMES = [f"user_{i}" for i in range(1, 16)]
