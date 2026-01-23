@@ -51,6 +51,16 @@
             <input type="text" name="file_link" placeholder="https://example.com/resource">
         </div>
 
+        {% if current_user.role == 'Admin' %}
+        <label>Assign Owner (Admin Only)</label>
+        <select name="owner_id">
+            {% for u in users %}
+            <option value="{{ u.id }}" {% if u==current_user %}selected{% endif %}>{{ u.username }} ({{ u.role }})
+            </option>
+            {% endfor %}
+        </select>
+        {% endif %}
+
         <button type="submit">Add Book</button>
     </form>
 </div>

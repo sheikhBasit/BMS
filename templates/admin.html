@@ -41,10 +41,45 @@
     </div>
 </div>
 
+
 <div class="grid">
-    <div class="card" data-tilt style="transform-style: preserve-3d;">
-        <h2 style="transform: translateZ(30px);">Manage Users</h2>
-        <div style="overflow-x: auto; transform: translateZ(20px);">
+    <div class="card" style="transform-style: preserve-3d;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2>Manage Users</h2>
+            <button class="btn-small" onclick="toggleAddUserForm()"
+                style="background: var(--secondary); color: #000; width: auto;">+ Add User</button>
+        </div>
+
+        <!-- Add User Form (Hidden by default) -->
+        <div id="addUserForm"
+            style="display: none; margin-bottom: 2rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+            <h3>Create New User</h3>
+            <form action="{{ url_for('admin_add_user') }}" method="POST"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; align-items: end;">
+                <div>
+                    <label>Username</label>
+                    <input type="text" name="username" required style="margin-bottom: 0;">
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input type="email" name="email" required style="margin-bottom: 0;">
+                </div>
+                <div>
+                    <label>Password</label>
+                    <input type="password" name="password" required style="margin-bottom: 0;">
+                </div>
+                <div>
+                    <label>Role</label>
+                    <select name="role" style="margin-bottom: 0;">
+                        <option value="Member">Member</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <button type="submit" style="width: 100%; margin-bottom: 0;">Create</button>
+            </form>
+        </div>
+
+        <div style="overflow-x: auto;">
             <table>
                 <thead>
                     <tr>
@@ -56,7 +91,7 @@
                 </thead>
                 <tbody>
                     {% for user in users %}
-                    <tr style="transform: translateZ(10px);">
+                    <tr>
                         <td>{{ user.username }}<br><small>{{ user.email }}</small></td>
                         <td>{{ user.role }}</td>
                         <td>
@@ -66,13 +101,18 @@
                             <span style="color: green;">Active</span>
                             {% endif %}
                         </td>
-                        <td>
-                            {% if user.role != 'Admin' %}
+                        <td style="display: flex; gap: 0.5rem;">
+                            {% if user.role != 'Admin' or user.id != current_user.id %}
                             <form method="POST" action="{{ url_for('toggle_block_user', id=user.id) }}">
                                 <button type="submit" class="btn-small"
                                     style="background: {% if user.is_blocked %}#00b894{% else %}#cf6679{% endif %}; width: auto;">
                                     {% if user.is_blocked %}Unblock{% else %}Block{% endif %}
                                 </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('admin_delete_user', id=user.id) }}"
+                                onsubmit="return confirm('Are you sure? User data will be lost.');">
+                                <button type="submit" class="btn-small"
+                                    style="background: #d63031; width: auto;">Delete</button>
                             </form>
                             {% endif %}
                         </td>
@@ -83,9 +123,15 @@
         </div>
     </div>
 
-    <div class="card" data-tilt style="transform-style: preserve-3d;">
-        <h2 style="transform: translateZ(30px);">Manage Books</h2>
-        <div style="overflow-x: auto; transform: translateZ(20px);">
+    <div class="card" style="transform-style: preserve-3d;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2>Manage Books</h2>
+            <a href="{{ url_for('add_book') }}" class="btn-small"
+                style="background: var(--secondary); text-decoration: none; display: inline-block; color: #000;">+ Add
+                Book</a>
+        </div>
+
+        <div style="overflow-x: auto;">
             <table>
                 <thead>
                     <tr>
@@ -97,7 +143,7 @@
                 </thead>
                 <tbody>
                     {% for book in books %}
-                    <tr style="transform: translateZ(10px);">
+                    <tr>
                         <td>{{ book.title }}</td>
                         <td>{{ book.author }}</td>
                         <td>{{ book.owner.username }}</td>
@@ -120,7 +166,57 @@
     </div>
 </div>
 
+<div class="card" style="margin-top: 2rem;">
+    <h2>Global Borrow Requests</h2>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Book</th>
+                    <th>Borrower</th>
+                    <th>Owner</th>
+                    <th>Status</th>
+                    <th>Decision</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in all_requests %}
+                <tr>
+                    <td>{{ req.book.title }}</td>
+                    <td>{{ req.borrower.username }}</td>
+                    <td>{{ req.book.owner.username }}</td>
+                    <td>
+                        <span class="badge"
+                            style="background: {% if req.request_status == 'Accepted' %}#00b894{% elif req.request_status == 'Rejected' %}#d63031{% else %}#fdcb6e{% endif %};">
+                            {{ req.request_status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if req.request_status == 'Pending' %}
+                        <form method="POST" action="{{ url_for('handle_request', id=req.id) }}"
+                            style="display: inline-flex; gap: 0.2rem;">
+                            <button type="submit" name="action" value="accept" class="btn-small"
+                                style="background: #00b894; width: auto;">Accept</button>
+                            <button type="submit" name="action" value="reject" class="btn-small"
+                                style="background: #d63031; width: auto;">Reject</button>
+                        </form>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <script>
+    function toggleAddUserForm() {
+        const form = document.getElementById('addUserForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
     // Books by Type Chart
     const typeCtx = document.getElementById('bookTypeChart').getContext('2d');
     new Chart(typeCtx, {

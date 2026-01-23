@@ -33,8 +33,10 @@
             {% endif %}
             <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Search</a>
             {% if current_user.is_authenticated %}
+            {% if current_user.role != 'Admin' %}
             <a href="{{ url_for('my_likes') }}" class="{% if request.endpoint == 'my_likes' %}active{% endif %}">My
                 Likes</a>
+            {% endif %}
             <span>{{ current_user.username }}</span>
             <a href="{{ url_for('dashboard') }}"
                 class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
@@ -106,12 +108,15 @@
 
     <script>
         // Init Tilt Effect
-        VanillaTilt.init(document.querySelectorAll(".card"), {
-            max: 5,
-            speed: 400,
-            glare: true,
-            "max-glare": 0.2,
-        });
+        // Disable for admin to avoid cluttered UI and potential issues with buttons/forms
+        if (!document.body.classList.contains('page-admin')) {
+            VanillaTilt.init(document.querySelectorAll(".card"), {
+                max: 5,
+                speed: 400,
+                glare: true,
+                "max-glare": 0.2,
+            });
+        }
     </script>
 </body>
 

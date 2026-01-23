@@ -269,6 +269,11 @@ def add_book():
         location_note = request.form.get('location')
         description = request.form.get('description')
 
+        # Admin can assign owner
+        owner = current_user
+        if current_user.role == 'Admin' and request.form.get('owner_id'):
+            owner = User.query.get(request.form.get('owner_id')) or current_user
+
         book = Book(
             title=title, 
             author=author, 
@@ -276,14 +281,19 @@ def add_book():
             type=b_type, 
             file_link=final_file_link, 
             filename=filename, # Storing just the filename too if useful
-            owner=current_user,
+            owner=owner,
             location=location_note,
             description=description
         )
         db.session.add(book)
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('add_book.html', categories=BOOK_CATEGORIES)
+    
+    users = []
+    if current_user.role == 'Admin':
+        users = User.query.all()
+
+    return render_template('add_book.html', categories=BOOK_CATEGORIES, users=users)
 
 @app.route('/edit_book/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -372,7 +382,7 @@ def handle_request(id):
     req = BorrowRequest.query.get_or_404(id)
     action = request.form.get('action') 
     
-    if req.book.owner != current_user:
+    if req.book.owner != current_user and current_user.role != 'Admin':
         return "Unauthorized", 403
         
     if action == 'accept':
@@ -453,6 +463,11 @@ def admin_dashboard():
     borrowed_books = Book.query.filter_by(status='Borrowed', is_deleted=False).count()
     returned_books = Book.query.filter_by(status='Returned', is_deleted=False).count()
     
+    returned_books = Book.query.filter_by(status='Returned', is_deleted=False).count()
+    
+    # All requests for admin to view
+    all_requests = BorrowRequest.query.all()
+    
     return render_template('admin.html', 
         users=users, 
         books=books,
@@ -464,8 +479,51 @@ def admin_dashboard():
         digital_books=digital_books,
         available_books=available_books,
         borrowed_books=borrowed_books,
-        returned_books=returned_books
+        returned_books=returned_books,
+        all_requests=all_requests
     )
+
+@app.route('/admin/add_user', methods=['POST'])
+@login_required
+def admin_add_user():
+    if current_user.role != 'Admin':
+        return "Unauthorized", 403
+    
+    username = request.form.get('username', '').strip()
+    email = request.form.get('email', '').strip().lower()
+    password = request.form.get('password')
+    role = request.form.get('role', 'Member')
+    
+    if not username or not email or not password:
+        flash('All fields are required.')
+        return redirect(url_for('admin_dashboard'))
+    
+    if User.query.filter((User.username == username) | (User.email == email)).first():
+        flash('Username or Email already exists')
+        return redirect(url_for('admin_dashboard'))
+        
+    user = User(username=username, email=email, role=role)
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+    flash(f'User {username} created successfully.')
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/delete_user/<int:id>', methods=['POST'])
+@login_required
+def admin_delete_user(id):
+    if current_user.role != 'Admin':
+        return "Unauthorized", 403
+    user = User.query.get_or_404(id)
+    if user.username == 'admin':
+        flash('Cannot delete primary admin.')
+        return redirect(url_for('admin_dashboard'))
+    
+    # Option: delete their books too? For now just delete user
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'User {user.username} deleted.')
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/seed-data', methods=['POST', 'GET'])
 def admin_seed_data():

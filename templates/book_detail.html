@@ -16,13 +16,25 @@
 
                 <!-- Action Buttons -->
                 <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    {% if current_user.is_authenticated and book.owner != current_user %}
-                    {% if book.status == 'Available' %}
+                    {% if current_user.is_authenticated %}
+                    {% if book.owner != current_user and book.status == 'Available' %}
                     <a href="{{ url_for('request_borrow', id=book.id) }}" style="text-decoration: none;">
                         <button style="width: 100%;">
                             {% if book.type == 'Digital' %}Get Digital Copy{% else %}Request Borrow{% endif %}
                         </button>
                     </a>
+                    {% endif %}
+
+                    {% if current_user.role == 'Admin' %}
+                    <div style="display: flex; gap: 1rem;">
+                        <a href="{{ url_for('edit_book', id=book.id) }}" style="text-decoration: none; flex: 1;">
+                            <button style="width: 100%; background: #0984e3;">Edit Book</button>
+                        </a>
+                        <form method="POST" action="{{ url_for('delete_book', id=book.id) }}"
+                            onsubmit="return confirm('Delete this book?');" style="flex: 1;">
+                            <button type="submit" style="width: 100%; background: #d63031;">Delete</button>
+                        </form>
+                    </div>
                     {% endif %}
 
                     <button onclick="likeBook(this, {{ book.id }})" id="likeBtn"
