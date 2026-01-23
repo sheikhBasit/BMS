@@ -2,6 +2,7 @@ from app import app, db
 from models import User, Book, BorrowRequest
 from werkzeug.security import generate_password_hash
 import random
+import datetime
 
 def seed_database(force_reset=False):
     with app.app_context():
@@ -130,45 +131,71 @@ def seed_database(force_reset=False):
         db.session.commit()
         print(f"Added {books_added} new books.")
         
-        # Borrow Requests: Ensure we have at least 15 requests
+        # Borrow Requests: Ensure we have at least 15 requests with diverse states
         request_count = BorrowRequest.query.count()
-        if request_count < 15:
-            print(f"Current requests: {request_count}. Adding more to reach target...")
+        if request_count < 20: # Increasing target for diversity
+            print(f"Current requests: {request_count}. Adding diverse sample requests...")
             current_books = Book.query.filter_by(type='physical', is_deleted=False).all()
             non_admins = [u for u in users_objs if u.username != 'admin']
+            
             if current_books and non_admins:
+                states = ['pending', 'accepted', 'rejected', 'accepted'] # Weighted towards accepted
+                today = datetime.date.today()
+                
                 added_reqs = 0
-                for _ in range(20): # Try multiple times to get unique pairs
-                    if request_count + added_reqs >= 15:
+                for i in range(25):
+                    if request_count + added_reqs >= 25:
                         break
+                        
                     book = random.choice(current_books)
                     borrower = random.choice(non_admins)
                     
-                    # Check if this borrower already requested this book
+                    if book.owner == borrower:
+                        continue
+                        
                     existing = BorrowRequest.query.filter_by(book_id=book.id, borrower_id=borrower.id).first()
+                    if existing:
+                        continue
+                        
+                    status = random.choice(states)
                     
-                    if book.owner != borrower and not existing:
-                        req = BorrowRequest(
-                            book=book,
-                            borrower=borrower,
-                            proposed_date="2026-02-01",
-                            proposed_time="10:00",
-                            proposed_location="community center",
-                            request_status="pending"
-                        )
-                        db.session.add(req)
-                        added_reqs += 1
+                    # Create some past dates for "returned" or "overdue" simulation
+                    # Some in the past, some in the future
+                    days_offset = random.randint(-20, 20)
+                    date_str = (today + datetime.timedelta(days=days_offset)).strftime('%Y-%m-%d')
+                    
+                    req = BorrowRequest(
+                        book=book,
+                        borrower=borrower,
+                        proposed_date=date_str,
+                        proposed_time="12:00",
+                        proposed_location="local library",
+                        request_status=status
+                    )
+                    
+                    # Sync book status
+                    if status == 'accepted':
+                        if days_offset < -5: # Old accepted requests -> simulation: some returned, some borrowed
+                            if random.random() > 0.5:
+                                book.status = 'returned'
+                            else:
+                                book.status = 'borrowed'
+                        else:
+                            book.status = 'borrowed'
+                            
+                    db.session.add(req)
+                    added_reqs += 1
+                    
                 db.session.commit()
-                print(f"Added {added_reqs} sample requests.")
+                print(f"Added {added_reqs} diverse sample requests.")
 
         # Re-distribute Ownership if needed
-        # Often books are seeded as 'admin', let's spread the love
         admin_books = Book.query.filter(Book.owner.has(username='admin')).all()
         if len(admin_books) > 5:
             print(f"Admin owns {len(admin_books)} books. Re-distributing...")
             non_admins = [u for u in users_objs if u.username != 'admin']
             if non_admins:
-                for book in admin_books[5:]: # Keep only 5 for admin
+                for book in admin_books[5:]:
                     book.owner = random.choice(non_admins)
                 db.session.commit()
                 print("Ownership re-distributed.")

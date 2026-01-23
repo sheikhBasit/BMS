@@ -79,7 +79,7 @@ with app.app_context():
     ensure_ready()
 
 @app.context_processor
-def inject_db_status():
+def inject_globals():
     connected = False
     db_type = "SQLite"
     try:
@@ -94,7 +94,11 @@ def inject_db_status():
             db_type = "SQLite (Temp)"
     except:
         connected = False
-    return dict(db_connected=connected, db_type=db_type)
+    
+    import datetime
+    today_str = datetime.date.today().strftime('%Y-%m-%d')
+    
+    return dict(db_connected=connected, db_type=db_type, today=today_str)
 
 # Predefined book categories
 BOOK_CATEGORIES = [
@@ -479,7 +483,13 @@ def admin_dashboard():
     borrowed_books = Book.query.filter(Book.status.ilike('borrowed'), Book.is_deleted == False).count()
     returned_books = Book.query.filter(Book.status.ilike('returned'), Book.is_deleted == False).count()
     
-    returned_books = Book.query.filter_by(status='Returned', is_deleted=False).count()
+    import datetime
+    today_str = datetime.date.today().strftime('%Y-%m-%d')
+    overdue_books = BorrowRequest.query.join(Book).filter(
+        BorrowRequest.request_status.ilike('accepted'),
+        Book.status.ilike('borrowed'),
+        BorrowRequest.proposed_date < today_str
+    ).count()
     
     # All requests for admin to view
     all_requests = BorrowRequest.query.all()
@@ -496,8 +506,8 @@ def admin_dashboard():
         available_books=available_books,
         borrowed_books=borrowed_books,
         returned_books=returned_books,
-        all_requests=all_requests
-    )
+        overdue_books=overdue_books,
+        all_requests=all_requests)
 
 @app.route('/admin/add_user', methods=['POST'])
 @login_required
