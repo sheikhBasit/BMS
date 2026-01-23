@@ -41,7 +41,20 @@ def ensure_ready():
         # 1. Ensure Table Creation
         db.create_all()
         
-        # 2. Check for Admin
+        # 2. Schema Migration for Postgres (Force password_hash to 512)
+        from sqlalchemy import text
+        uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        if 'postgresql' in uri or 'postgres' in uri:
+            try:
+                # We use a raw SQL execution to alter the column type
+                db.session.execute(text('ALTER TABLE "user" ALTER COLUMN password_hash TYPE VARCHAR(512)'))
+                db.session.commit()
+                print("Postgres Schema Updated: password_hash set to 512.")
+            except Exception as e:
+                db.session.rollback()
+                print(f"Postgres migration skipped or failed: {e}")
+
+        # 3. Check for Admin
         admin = User.query.filter(User.username.ilike('admin')).first()
         if not admin:
             print("Creating default admin...")
@@ -50,7 +63,7 @@ def ensure_ready():
             db.session.add(admin)
             db.session.commit()
 
-        # 3. Check for Data parity
+        # 4. Check for Data parity
         if Book.query.count() == 0:
             print("Library empty. Triggering auto-seed...")
             from seed_db import seed_database
@@ -530,6 +543,7 @@ def admin_delete_user(id):
 
 @app.route('/admin/seed-data', methods=['POST', 'GET'])
 def admin_seed_data():
+    ensure_ready()
     try:
         from seed_db import seed_database
         # Default to safe mode (non-destructive)
