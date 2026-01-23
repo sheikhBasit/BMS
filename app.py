@@ -54,6 +54,14 @@ with app.app_context():
             print("Default admin created: admin / admin123")
         else:
             print("Admin user already exists.")
+
+        # Auto-seed books if count is 0
+        if Book.query.count() == 0:
+            print("Library is empty. Auto-seeding 50+ books...")
+            from seed_db import seed_database
+            # We don't drop_all inside seed_database anymore if we use it here
+            seed_database()
+            print("Auto-seeding complete!")
             
     except Exception as e:
         print(f"Database connection error: {e}")
