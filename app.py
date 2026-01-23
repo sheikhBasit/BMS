@@ -161,10 +161,9 @@ def logout():
 
 @app.route('/index')
 def index():
-    # Double-check seeding on home page load to handle serverless cold-start blanks
-    if Book.query.count() == 0:
-        ensure_ready()
-        
+    # Ensure seed data exists on every reload as requested
+    ensure_ready()
+    
     query = request.args.get('q', '').strip()
     if query:
         # Keyword search: split by space and search for each term
@@ -532,8 +531,9 @@ def admin_delete_user(id):
 def admin_seed_data():
     try:
         from seed_db import seed_database
-        seed_database(force_reset=True)
-        return "Database Seeded Successfully with 50+ books!", 200
+        # Default to safe mode (non-destructive)
+        seed_database(force_reset=False)
+        return "Database Checked and Seeded Successfully (Preserving custom data)!", 200
     except Exception as e:
         return f"Seeding failed: {str(e)}", 500
 
