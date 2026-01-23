@@ -35,36 +35,35 @@ login_manager.init_app(app)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-with app.app_context():
-    db.create_all()
-    # Ping database and ensure at least one admin exists
+def ensure_ready():
+    """Ensure database is connected, admin exists, and books are seeded."""
     try:
-        from sqlalchemy import text
-        db.session.execute(text('SELECT 1'))
-        print("Database connected successfully!")
+        # 1. Ensure Table Creation
+        db.create_all()
         
-        # Ensure default admin exists
+        # 2. Check for Admin
         admin = User.query.filter_by(username='admin').first()
         if not admin:
-            print("Admin user not found. Creating default admin...")
+            print("Creating default admin...")
             admin = User(username='admin', email='admin@bms.com', role='Admin')
             admin.set_password('admin123')
             db.session.add(admin)
             db.session.commit()
-            print("Default admin created: admin / admin123")
-        else:
-            print("Admin user already exists.")
 
-        # Auto-seed books if count is 0
+        # 3. Check for Data parity
         if Book.query.count() == 0:
-            print("Library is empty. Auto-seeding 50+ books...")
+            print("Library empty. Triggering auto-seed...")
             from seed_db import seed_database
-            # We don't drop_all inside seed_database anymore if we use it here
             seed_database()
-            print("Auto-seeding complete!")
-            
+            print("Auto-seeding successful.")
+            return True
     except Exception as e:
-        print(f"Database connection error: {e}")
+        print(f"Startup check error: {e}")
+    return False
+
+# Trigger basic setup on module load, but we'll also call it in routes
+with app.app_context():
+    ensure_ready()
 
 @app.context_processor
 def inject_db_status():
@@ -162,6 +161,10 @@ def logout():
 
 @app.route('/index')
 def index():
+    # Double-check seeding on home page load to handle serverless cold-start blanks
+    if Book.query.count() == 0:
+        ensure_ready()
+        
     query = request.args.get('q', '').strip()
     if query:
         # Keyword search: split by space and search for each term
