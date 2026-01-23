@@ -42,7 +42,7 @@ def ensure_ready():
         db.create_all()
         
         # 2. Check for Admin
-        admin = User.query.filter_by(username='admin').first()
+        admin = User.query.filter(User.username.ilike('admin')).first()
         if not admin:
             print("Creating default admin...")
             admin = User(username='admin', email='admin@bms.com', role='admin')
@@ -120,8 +120,8 @@ def register():
             flash('Password must be at least 6 characters long.')
             return redirect(url_for('register'))
 
-        if User.query.filter((User.username == username) | (User.email == email)).first():
-            flash('Username or Email already exists')
+        if User.query.filter((User.username.ilike(username)) | (User.email.ilike(email))).first():
+            flash('username or email already exists')
             return redirect(url_for('register'))
             
         user = User(username=username, email=email, role=role)
@@ -139,7 +139,7 @@ def login():
         password = request.form.get('password')
         remember = True if request.form.get('remember') else False
         
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter(User.username.ilike(username)).first()
         if user:
             if user.check_password(password):
                 if user.is_blocked:
@@ -501,8 +501,8 @@ def admin_add_user():
         flash('All fields are required.')
         return redirect(url_for('admin_dashboard'))
     
-    if User.query.filter((User.username == username) | (User.email == email)).first():
-        flash('Username or Email already exists')
+    if User.query.filter((User.username.ilike(username)) | (User.email.ilike(email))).first():
+        flash('username or email already exists')
         return redirect(url_for('admin_dashboard'))
         
     user = User(username=username, email=email, role=role)
