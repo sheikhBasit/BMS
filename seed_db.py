@@ -14,51 +14,49 @@ def seed_database(force_reset=False):
             db.create_all()
         
         # Check if users already exist to avoid duplicate errors if not resetting
-        if not force_reset and User.query.filter_by(username='admin').first():
-             users_objs = User.query.all()
-             print("Users already exist, skipping user creation...")
-        else:
-            # Create Users
-            print("Creating users...")
-            users_data = [
-                ('admin', 'admin@bms.com', 'admin'),
-                ('alice', 'alice@example.com', 'member'),
-                ('bob', 'bob@example.com', 'member'),
-                ('charlie', 'charlie@example.com', 'member'),
-                ('david', 'david@example.com', 'member'),
-                ('eve', 'eve@example.com', 'member')
-            ]
-            
-            users_objs = []
-            for username, email, role in users_data:
+        # Individual User Check & Creation
+        print("Ensuring seed users exist...")
+        users_data = [
+            ('admin', 'admin@bms.com', 'admin'),
+            ('alice', 'alice@example.com', 'member'),
+            ('bob', 'bob@example.com', 'member'),
+            ('charlie', 'charlie@example.com', 'member'),
+            ('david', 'david@example.com', 'member'),
+            ('eve', 'eve@example.com', 'member')
+        ]
+        
+        users_objs = []
+        for username, email, role in users_data:
+            u = User.query.filter(User.username.ilike(username)).first()
+            if not u:
                 u = User(username=username, email=email, role=role.lower())
                 if username == 'admin':
                     u.set_password('admin123')
                 else:
                     u.set_password('password')
-                users_objs.append(u)
-            
-            db.session.add_all(users_objs)
-            db.session.commit()
-            print(f"Created {len(users_objs)} users.")
+                db.session.add(u)
+                db.session.commit()
+                print(f"Created user: {username}")
+            users_objs.append(u)
         
-        # Ensure we have the user objects available even if we didn't just create them
+        # Ensure we have the user objects available
         if not users_objs:
             users_objs = User.query.all()
         
         if not users_objs:
-            print("ERROR: No users found and couldn't create them.")
+            print("ERROR: No users found.")
             return
+
         # Create Books only if count is low or we want to ensure these specific classics exist
         print("Ensuring seed books exist...")
         
         # Helper to get random user
         def get_owner():
-            # If we only have 1 user (admin or otherwise), always return the first one
             if len(users_objs) <= 1:
                 return users_objs[0]
-            # Otherwise return a random user excluding the admin (index 0)
-            return random.choice(users_objs[1:])
+            # Return a random user excluding the admin if possible
+            non_admins = [u for u in users_objs if u.username != 'admin']
+            return random.choice(non_admins if non_admins else users_objs)
             
         book_list = [
             ("the great gatsby", "f. scott fitzgerald", "fiction", "physical", None, "main library, shelf a", "classic novel of the jazz age."),
@@ -100,7 +98,7 @@ def seed_database(force_reset=False):
             ("the power of habit", "charles duhigg", "non-fiction", "digital", "https://example.com/habit.pdf", None, "why we do what we do."),
             ("outliers", "malcolm gladwell", "non-fiction", "physical", None, "sociology section", "the story of success."),
             ("the book thief", "markus zusak", "fiction", "physical", None, "historical fiction", "narrated by death in nazi germany."),
-            ("life of pi", "yann martel", "fiction", "digital", "https://example.com/pi.pdf", None, "a boy and a tiger on a lifeboat."),
+            ("life of pi", "yann mantel", "fiction", "digital", "https://example.com/pi.pdf", None, "a boy and a tiger on a lifeboat."),
             ("dracula", "bram stoker", "mystery", "physical", None, "gothic section", "the original vampire story."),
             ("sherlock holmes", "arthur conan doyle", "mystery", "digital", "https://example.com/holmes.pdf", None, "the world's greatest detective."),
             ("gone girl", "gillian flynn", "thriller", "physical", None, "thriller shelf", "a dark and twisty marriage story."),
@@ -118,7 +116,6 @@ def seed_database(force_reset=False):
         
         books_added = 0
         for title, author, cat, btype, link, loc, desc in book_list:
-            # Check if book already exists (by title and author)
             exists = Book.query.filter_by(title=title, author=author).first()
             if not exists:
                 b = Book(title=title, author=author, category=cat, type=btype, file_link=link, owner=get_owner(), location=loc, description=desc)
@@ -128,26 +125,28 @@ def seed_database(force_reset=False):
         db.session.commit()
         print(f"Added {books_added} new books.")
         
-        # Create Requests only if database was empty/fresh
-        if books_added > 0:
+        # Borrow Requests: Create if none exist, or if we just added books
+        if BorrowRequest.query.count() == 0:
             print("Creating sample requests...")
-            # We need a fresh list of books for random selection
-            current_books = Book.query.all()
-            for _ in range(5):
-                book = random.choice(current_books)
-                borrower = random.choice(users_objs[1:])
-                
-                if book.owner != borrower and book.status == 'Available' and book.type == 'Physical':
-                    req = BorrowRequest(
-                        book=book,
-                        borrower=borrower,
-                        proposed_date="2026-02-01",
-                        proposed_time="10:00",
-                        proposed_location="Community Center",
-                        request_status="Pending"
-                    )
-                    db.session.add(req)
-            db.session.commit()
+            current_books = Book.query.filter_by(type='Physical').all()
+            non_admins = [u for u in users_objs if u.username != 'admin']
+            if current_books and non_admins:
+                for _ in range(10): # Create 10 requests
+                    book = random.choice(current_books)
+                    borrower = random.choice(non_admins)
+                    
+                    if book.owner != borrower:
+                        req = BorrowRequest(
+                            book=book,
+                            borrower=borrower,
+                            proposed_date="2026-02-01",
+                            proposed_time="10:00",
+                            proposed_location="community center",
+                            request_status="pending"
+                        )
+                        db.session.add(req)
+                db.session.commit()
+                print("Sample requests created.")
         
         print("Seeding/Check Complete!")
 
