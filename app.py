@@ -469,15 +469,15 @@ def admin_dashboard():
     total_users = User.query.count()
     total_books = Book.query.filter_by(is_deleted=False).count()
     total_requests = BorrowRequest.query.count()
-    active_borrows = Book.query.filter_by(status='Borrowed', is_deleted=False).count()
+    active_borrows = Book.query.filter(Book.status.ilike('borrowed'), Book.is_deleted == False).count()
     
     # Chart data
-    physical_books = Book.query.filter_by(type='Physical', is_deleted=False).count()
-    digital_books = Book.query.filter_by(type='Digital', is_deleted=False).count()
+    physical_books = Book.query.filter(Book.type.ilike('physical'), Book.is_deleted == False).count()
+    digital_books = Book.query.filter(Book.type.ilike('digital'), Book.is_deleted == False).count()
     
-    available_books = Book.query.filter_by(status='Available', is_deleted=False).count()
-    borrowed_books = Book.query.filter_by(status='Borrowed', is_deleted=False).count()
-    returned_books = Book.query.filter_by(status='Returned', is_deleted=False).count()
+    available_books = Book.query.filter(Book.status.ilike('available'), Book.is_deleted == False).count()
+    borrowed_books = Book.query.filter(Book.status.ilike('borrowed'), Book.is_deleted == False).count()
+    returned_books = Book.query.filter(Book.status.ilike('returned'), Book.is_deleted == False).count()
     
     returned_books = Book.query.filter_by(status='Returned', is_deleted=False).count()
     
