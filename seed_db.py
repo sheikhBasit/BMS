@@ -18,28 +18,28 @@ def seed_database(force_reset=False):
              users_objs = User.query.all()
              print("Users already exist, skipping user creation...")
         else:
-             # Create Users
-        print("Creating users...")
-        users_data = [
-            ('admin', 'admin@bms.com', 'Admin'),
-            ('alice', 'alice@example.com', 'Member'),
-            ('bob', 'bob@example.com', 'Member'),
-            ('charlie', 'charlie@example.com', 'Member'),
-            ('david', 'david@example.com', 'Member'),
-            ('eve', 'eve@example.com', 'Member')
-        ]
-        
-        users_objs = []
-        for username, email, role in users_data:
-            u = User(username=username, email=email, role=role)
-            if username == 'admin':
-                u.set_password('admin123')
-            else:
-                u.set_password('password')
-            users_objs.append(u)
-        
-        db.session.add_all(users_objs)
-        db.session.commit()
+            # Create Users
+            print("Creating users...")
+            users_data = [
+                ('admin', 'admin@bms.com', 'Admin'),
+                ('alice', 'alice@example.com', 'Member'),
+                ('bob', 'bob@example.com', 'Member'),
+                ('charlie', 'charlie@example.com', 'Member'),
+                ('david', 'david@example.com', 'Member'),
+                ('eve', 'eve@example.com', 'Member')
+            ]
+            
+            users_objs = []
+            for username, email, role in users_data:
+                u = User(username=username, email=email, role=role)
+                if username == 'admin':
+                    u.set_password('admin123')
+                else:
+                    u.set_password('password')
+                users_objs.append(u)
+            
+            db.session.add_all(users_objs)
+            db.session.commit()
         
         # Create Books
         print("Creating books...")
