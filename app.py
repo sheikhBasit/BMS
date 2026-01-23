@@ -210,23 +210,29 @@ def add_book():
             if uploaded_file and uploaded_file.filename != '':
                 if allowed_file(uploaded_file.filename):
                     try:
-                        # Ensure uploads directory exists
-                        upload_dir = os.path.join('static', 'uploads')
-                        os.makedirs(upload_dir, exist_ok=True)
-                        
-                        # Local Upload Logic
-                        filename = secure_filename(uploaded_file.filename)
-                        # Ensure filename is unique to prevent overwrite
-                        import uuid
-                        unique_filename = f"{uuid.uuid4().hex}_{filename}"
-                        
-                        file_path = os.path.join(upload_dir, unique_filename)
-                        uploaded_file.save(file_path)
-                        
-                        # Store the path that will work with url_for('static')
-                        # This stores: /static/uploads/filename.pdf
-                        final_file_link = f"/static/uploads/{unique_filename}"
-                        filename = unique_filename
+                        # Cloudinary Upload if on Vercel or configured
+                        if os.environ.get('VERCEL') or app.config['CLOUDINARY_API_KEY']:
+                            upload_result = cloudinary.uploader.upload(
+                                uploaded_file,
+                                resource_type="auto",
+                                folder="bookshare_digital"
+                            )
+                            final_file_link = upload_result.get('secure_url')
+                            filename = uploaded_file.filename
+                        else:
+                            # Local Upload Logic (Development only)
+                            upload_dir = os.path.join('static', 'uploads')
+                            os.makedirs(upload_dir, exist_ok=True)
+                            
+                            filename = secure_filename(uploaded_file.filename)
+                            import uuid
+                            unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                            
+                            file_path = os.path.join(upload_dir, unique_filename)
+                            uploaded_file.save(file_path)
+                            
+                            final_file_link = f"/static/uploads/{unique_filename}"
+                            filename = unique_filename
                         
                     except Exception as e:
                         flash(f'Upload failed: {str(e)}')
@@ -439,6 +445,20 @@ def admin_dashboard():
         borrowed_books=borrowed_books,
         returned_books=returned_books
     )
+
+@app.route('/admin/seed', methods=['POST'])
+@login_required
+def seed_db_route():
+    if current_user.role != 'Admin':
+        return "Unauthorized", 403
+    
+    try:
+        from seed_db import seed_database
+        seed_database()
+        flash('Database seeded successfully!')
+    except Exception as e:
+        flash(f'Seeding failed: {str(e)}')
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/delete_book/<int:id>', methods=['POST'])
 @login_required
