@@ -37,11 +37,24 @@ def load_user(user_id):
 
 with app.app_context():
     db.create_all()
-    # Ping database to check connection
+    # Ping database and ensure at least one admin exists
     try:
         from sqlalchemy import text
         db.session.execute(text('SELECT 1'))
         print("Database connected successfully!")
+        
+        # Ensure default admin exists
+        admin = User.query.filter_by(username='admin').first()
+        if not admin:
+            print("Admin user not found. Creating default admin...")
+            admin = User(username='admin', email='admin@bms.com', role='Admin')
+            admin.set_password('admin123')
+            db.session.add(admin)
+            db.session.commit()
+            print("Default admin created: admin / admin123")
+        else:
+            print("Admin user already exists.")
+            
     except Exception as e:
         print(f"Database connection error: {e}")
 

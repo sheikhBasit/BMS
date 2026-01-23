@@ -78,6 +78,31 @@
         </div>
     </div>
     {% endfor %}
+
+    {% if not books %}
+    <div
+        style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: rgba(0,0,0,0.2); border-radius: 20px; border: 2px dashed rgba(255,255,255,0.1);">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📭</div>
+        <h2 style="color: var(--text-muted);">The library is currently empty</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Be the first to share a book or search for something
+            else!</p>
+        {% if current_user.is_authenticated and current_user.role == 'Admin' %}
+        <form action="{{ url_for('seed_db_route') }}" method="POST">
+            <button type="submit" style="width: auto; padding: 0.8rem 2rem; background: var(--primary);">
+                <i class="fas fa-magic"></i> Quick Seed Sample Data
+            </button>
+        </form>
+        {% elif current_user.is_authenticated %}
+        <a href="{{ url_for('add_book') }}" style="text-decoration: none;">
+            <button style="width: auto; padding: 0.8rem 2rem;">Share a Book Now</button>
+        </a>
+        {% else %}
+        <a href="{{ url_for('login') }}" style="text-decoration: none;">
+            <button style="width: auto; padding: 0.8rem 2rem;">Login to Share</button>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 
 <!-- Load Confetti -->
