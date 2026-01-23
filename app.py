@@ -161,7 +161,7 @@ def logout():
 
 @app.route('/index')
 def index():
-    # Ensure seed data exists on every reload as requested
+    # Call seeding/readiness check before any logic
     ensure_ready()
     
     query = request.args.get('q', '').strip()

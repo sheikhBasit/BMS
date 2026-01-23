@@ -40,7 +40,15 @@ def seed_database(force_reset=False):
             
             db.session.add_all(users_objs)
             db.session.commit()
+            print(f"Created {len(users_objs)} users.")
         
+        # Ensure we have the user objects available even if we didn't just create them
+        if not users_objs:
+            users_objs = User.query.all()
+        
+        if not users_objs:
+            print("ERROR: No users found and couldn't create them.")
+            return
         # Create Books only if count is low or we want to ensure these specific classics exist
         print("Ensuring seed books exist...")
         
