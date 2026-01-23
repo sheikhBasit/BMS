@@ -76,8 +76,8 @@
                 <div>
                     <label>Role</label>
                     <select name="role" style="margin-bottom: 0;">
-                        <option value="Member">Member</option>
-                        <option value="Admin">Admin</option>
+                        <option value="member">Member</option>
+                        <option value="admin">Admin</option>
                     </select>
                 </div>
                 <button type="submit" style="width: 100%; margin-bottom: 0;">Create</button>
@@ -107,7 +107,7 @@
                             {% endif %}
                         </td>
                         <td style="display: flex; gap: 0.5rem;">
-                            {% if user.role != 'Admin' or user.id != current_user.id %}
+                            {% if user.role != 'admin' or user.id != current_user.id %}
                             <form method="POST" action="{{ url_for('toggle_block_user', id=user.id) }}">
                                 <button type="submit" class="btn-small"
                                     style="background: {% if user.is_blocked %}#00b894{% else %}#cf6679{% endif %}; width: auto;">
@@ -231,7 +231,7 @@
     new Chart(typeCtx, {
         type: 'doughnut',
         data: {
-            labels: ['Physical', 'Digital'],
+            labels: ['physical', 'digital'],
             datasets: [{
                 data: [{{ physical_books }}, {{ digital_books }}],
         backgroundColor: ['#ff7675', '#a29bfe'],

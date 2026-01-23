@@ -15,8 +15,8 @@ app = Flask(__name__)
 # Fix for Vercel Read-only File System
 if os.environ.get('VERCEL'):
     app.instance_path = '/tmp'
-    # Ensure SQLite uses the writable /tmp directory if no DATABASE_URL is set
-    if not os.environ.get('DATABASE_URL'):
+    # Use SQLite in /tmp only if no remote database is configured
+    if not os.environ.get('DATABASE_URL') and not os.environ.get('POSTGRES_URL'):
         Config.SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join('/tmp', 'bms.db')
 
 app.config.from_object(Config)

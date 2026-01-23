@@ -60,8 +60,8 @@
                 </button>
 
                 {% if current_user.is_authenticated %}
-                {% if book.status == 'Available' and book.owner != current_user %}
-                {% if book.type == 'Physical' %}
+                {% if book.status|lower == 'available' and book.owner != current_user %}
+                {% if book.type|lower == 'physical' %}
                 <a href="{{ url_for('request_borrow', id=book.id) }}" style="text-decoration: none;">
                     <button class="btn-small"
                         style="background: var(--secondary); border: none; font-weight: bold; color: #000;">Request</button>

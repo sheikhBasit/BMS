@@ -7,7 +7,7 @@
         <input type="date" name="date" id="borrowDate" required>
         <p>Proposed Time</p>
         <input type="time" name="time" id="borrowTime" required>
-        {% if book.type == 'Physical' %}
+        {% if book.type|lower == 'physical' %}
         <p>Proposed Location</p>
         <input type="text" name="location" placeholder="e.g. Library Main Hall" required>
         {% else %}

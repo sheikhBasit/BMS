@@ -66,7 +66,7 @@
                         <td>{{ req.book.title }}</td>
                         <td>{{ req.borrower.username }}</td>
                         <td>
-                            {% if req.book.type == 'Physical' %}
+                            {% if req.book.type|lower == 'physical' %}
                             <small>📅 {{ req.proposed_date }} <br> 🕒 {{ req.proposed_time }} <br> 📍 {{
                                 req.proposed_location }}</small>
                             {% else %}
@@ -108,9 +108,8 @@
                                 </form>
                             </div>
 
-                            {% elif req.request_status == 'Accepted' and req.book.status == 'Borrowed' and req.book.type
-                            ==
-                            'Physical' %}
+                            {% elif req.request_status == 'Accepted' and req.book.status|lower == 'borrowed' and
+                            req.book.type|lower == 'physical' %}
                             <form method="POST" action="{{ url_for('return_book', req_id=req.id) }}">
                                 <button type="submit" class="btn-small" style="background: #00b894; width: auto;">Mark
                                     Returned</button>
@@ -171,7 +170,7 @@
                                 <button type="submit" class="btn-small"
                                     style="background: #00b894; width: auto;">Return</button>
                             </form>
-                            {% elif req.book.type == 'Physical' %}
+                            {% elif req.book.type|lower == 'physical' %}
                             <small>{{ req.request_status }}</small>
                             {% endif %}
                         </td>
