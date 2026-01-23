@@ -45,7 +45,7 @@ def ensure_ready():
         admin = User.query.filter_by(username='admin').first()
         if not admin:
             print("Creating default admin...")
-            admin = User(username='admin', email='admin@bms.com', role='Admin')
+            admin = User(username='admin', email='admin@bms.com', role='admin')
             admin.set_password('admin123')
             db.session.add(admin)
             db.session.commit()
@@ -85,10 +85,10 @@ def inject_db_status():
 
 # Predefined book categories
 BOOK_CATEGORIES = [
-    'Fiction', 'Non-Fiction', 'Science', 'Technology', 
-    'History', 'Biography', 'Self-Help', 'Business',
-    'Art', 'Philosophy', 'Religion', 'Mystery',
-    'Romance', 'Thriller', 'Fantasy', 'Other'
+    'fiction', 'non-fiction', 'science', 'technology', 
+    'history', 'biography', 'self-help', 'business',
+    'art', 'philosophy', 'religion', 'mystery',
+    'romance', 'thriller', 'fantasy', 'other'
 ]
 
 @app.route('/')
@@ -98,10 +98,10 @@ def index_root():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form.get('username', '').strip()
+        username = request.form.get('username', '').strip().lower()
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password')
-        role = 'Member' # Default role
+        role = 'member' # Default role
         
         # Validation
         if not username or not email or not password:
@@ -135,7 +135,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username', '').strip()
+        username = request.form.get('username', '').strip().lower()
         password = request.form.get('password')
         remember = True if request.form.get('remember') else False
         
@@ -165,7 +165,7 @@ def index():
     if Book.query.count() == 0:
         ensure_ready()
     
-    query = request.args.get('q', '').strip()
+    query = request.args.get('q', '').strip().lower()
     if query:
         # Keyword search: split by space and search for each term
         keywords = query.split()
@@ -202,9 +202,9 @@ def allowed_file(filename):
 @login_required
 def add_book():
     if request.method == 'POST':
-        title = request.form.get('title', '').strip()
-        author = request.form.get('author', '').strip()
-        category = request.form.get('category', '').strip()
+        title = request.form.get('title', '').strip().lower()
+        author = request.form.get('author', '').strip().lower()
+        category = request.form.get('category', '').strip().lower()
         b_type = request.form.get('type')
         
         # Validation
@@ -269,12 +269,12 @@ def add_book():
                  return redirect(url_for('add_book'))
         
         # New fields: location, description
-        location_note = request.form.get('location')
-        description = request.form.get('description')
+        location_note = request.form.get('location', '').strip().lower()
+        description = request.form.get('description', '').strip().lower()
 
         # Admin can assign owner
         owner = current_user
-        if current_user.role == 'Admin' and request.form.get('owner_id'):
+        if current_user.role == 'admin' and request.form.get('owner_id'):
             owner = User.query.get(request.form.get('owner_id')) or current_user
 
         book = Book(
@@ -293,7 +293,7 @@ def add_book():
         return redirect(url_for('index'))
     
     users = []
-    if current_user.role == 'Admin':
+    if current_user.role == 'admin':
         users = User.query.all()
 
     return render_template('add_book.html', categories=BOOK_CATEGORIES, users=users)
@@ -303,15 +303,15 @@ def add_book():
 def edit_book(id):
     book = Book.query.get_or_404(id)
     # Admin can edit any book, Owner can edit their own
-    if book.owner != current_user and current_user.role != 'Admin':
+    if book.owner != current_user and current_user.role != 'admin':
         return "Unauthorized", 403
     
     if request.method == 'POST':
-        title = request.form.get('title', '').strip()
-        author = request.form.get('author', '').strip()
-        category = request.form.get('category', '').strip()
-        description = request.form.get('description', '').strip()
-        location = request.form.get('location', '').strip()
+        title = request.form.get('title', '').strip().lower()
+        author = request.form.get('author', '').strip().lower()
+        category = request.form.get('category', '').strip().lower()
+        description = request.form.get('description', '').strip().lower()
+        location = request.form.get('location', '').strip().lower()
         
         # Validation
         if not title or not author or not category:
@@ -338,7 +338,7 @@ def edit_book(id):
         
         db.session.commit()
         flash('Book updated successfully.')
-        if current_user.role == 'Admin':
+        if current_user.role == 'admin':
              return redirect(url_for('admin_dashboard'))
         return redirect(url_for('dashboard'))
         
@@ -370,7 +370,7 @@ def request_borrow(id):
     if request.method == 'POST':
         date = request.form.get('date')
         time = request.form.get('time')
-        location = request.form.get('location')
+        location = request.form.get('location', '').strip().lower()
         
         req = BorrowRequest(book=book, borrower=current_user, proposed_date=date, proposed_time=time, proposed_location=location)
         db.session.add(req)
@@ -385,7 +385,7 @@ def handle_request(id):
     req = BorrowRequest.query.get_or_404(id)
     action = request.form.get('action') 
     
-    if req.book.owner != current_user and current_user.role != 'Admin':
+    if req.book.owner != current_user and current_user.role != 'admin':
         return "Unauthorized", 403
         
     if action == 'accept':
@@ -398,7 +398,7 @@ def handle_request(id):
         # Suggest alternative details
         new_date = request.form.get('date')
         new_time = request.form.get('time')
-        new_location = request.form.get('location')
+        new_location = request.form.get('location', '').strip().lower()
         if new_date: req.proposed_date = new_date
         if new_time: req.proposed_time = new_time
         if new_location: req.proposed_location = new_location
@@ -414,7 +414,7 @@ def return_book(req_id):
     
     # Logic: Owner returns Physical, Borrower returns Digital
     if req.book.type == 'Physical':
-        if req.book.owner != current_user and current_user.role != 'Admin':
+        if req.book.owner != current_user and current_user.role != 'admin':
              return "Unauthorized", 403
         req.book.status = 'Returned'
         
@@ -431,7 +431,7 @@ def return_book(req_id):
 @login_required
 def dashboard():
     # Role-based redirection
-    if current_user.role == 'Admin':
+    if current_user.role == 'admin':
         return redirect(url_for('admin_dashboard'))
     
     # Member Dashboard Logic
@@ -446,7 +446,7 @@ def dashboard():
 @app.route('/admin')
 @login_required
 def admin_dashboard():
-    if current_user.role != 'Admin':
+    if current_user.role != 'admin':
         return "Unauthorized", 403
         
     users = User.query.all()
@@ -489,13 +489,13 @@ def admin_dashboard():
 @app.route('/admin/add_user', methods=['POST'])
 @login_required
 def admin_add_user():
-    if current_user.role != 'Admin':
+    if current_user.role != 'admin':
         return "Unauthorized", 403
     
-    username = request.form.get('username', '').strip()
+    username = request.form.get('username', '').strip().lower()
     email = request.form.get('email', '').strip().lower()
     password = request.form.get('password')
-    role = request.form.get('role', 'Member')
+    role = request.form.get('role', 'member').lower()
     
     if not username or not email or not password:
         flash('All fields are required.')
@@ -515,7 +515,7 @@ def admin_add_user():
 @app.route('/admin/delete_user/<int:id>', methods=['POST'])
 @login_required
 def admin_delete_user(id):
-    if current_user.role != 'Admin':
+    if current_user.role != 'admin':
         return "Unauthorized", 403
     user = User.query.get_or_404(id)
     if user.username == 'admin':
@@ -541,7 +541,7 @@ def admin_seed_data():
 @app.route('/admin/delete_book/<int:id>', methods=['POST'])
 @login_required
 def delete_book_admin(id):
-    if current_user.role != 'Admin':
+    if current_user.role != 'admin':
         return "Unauthorized", 403
     book = Book.query.get_or_404(id)
     book.is_deleted = True
@@ -552,7 +552,7 @@ def delete_book_admin(id):
 @app.route('/toggle_block_user/<int:id>', methods=['POST'])
 @login_required
 def toggle_block_user(id):
-    if current_user.role != 'Admin':
+    if current_user.role != 'admin':
         return "Unauthorized", 403
     user = User.query.get_or_404(id)
     if user.username == 'admin': # Protect admin
@@ -616,7 +616,7 @@ def my_likes():
 @login_required
 def delete_book(id):
     book = Book.query.get_or_404(id)
-    if book.owner != current_user and current_user.role != 'Admin':
+    if book.owner != current_user and current_user.role != 'admin':
         return "Unauthorized", 403
     book.is_deleted = True
     db.session.commit()

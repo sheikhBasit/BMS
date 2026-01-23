@@ -33,14 +33,14 @@
             {% endif %}
             <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Search</a>
             {% if current_user.is_authenticated %}
-            {% if current_user.role != 'Admin' %}
+            {% if current_user.role != 'admin' %}
             <a href="{{ url_for('my_likes') }}" class="{% if request.endpoint == 'my_likes' %}active{% endif %}">My
                 Likes</a>
             {% endif %}
             <span>{{ current_user.username }}</span>
             <a href="{{ url_for('dashboard') }}"
                 class="{% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
-            {% if current_user.role != 'Admin' %}
+            {% if current_user.role != 'admin' %}
             <a href="{{ url_for('add_book') }}" class="{% if request.endpoint == 'add_book' %}active{% endif %}">Share
                 Book</a>
             {% endif %}
@@ -117,6 +117,30 @@
                 "max-glare": 0.2,
             });
         }
+
+        // Global form logic: Lowercase all fields except passwords on submission
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            // Only process actual forms (not search query strings in links etc)
+            if (form.tagName === 'FORM') {
+                const elements = form.elements;
+                for (let i = 0; i < elements.length; i++) {
+                    const el = elements[i];
+                    // Skip password, file, and non-textual inputs
+                    if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') &&
+                        el.type !== 'password' &&
+                        el.type !== 'file' &&
+                        el.type !== 'submit' &&
+                        el.type !== 'button' &&
+                        el.type !== 'checkbox' &&
+                        el.type !== 'radio') {
+                        if (el.value && typeof el.value === 'string') {
+                            el.value = el.value.trim().toLowerCase();
+                        }
+                    }
+                }
+            }
+        });
     </script>
 </body>
 
