@@ -459,20 +459,6 @@ def admin_dashboard():
         returned_books=returned_books
     )
 
-@app.route('/admin/seed', methods=['POST'])
-@login_required
-def seed_db_route():
-    if current_user.role != 'Admin':
-        return "Unauthorized", 403
-    
-    try:
-        from seed_db import seed_database
-        seed_database()
-        flash('Database seeded successfully!')
-    except Exception as e:
-        flash(f'Seeding failed: {str(e)}')
-    return redirect(url_for('admin_dashboard'))
-
 @app.route('/admin/delete_book/<int:id>', methods=['POST'])
 @login_required
 def delete_book_admin(id):

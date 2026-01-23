@@ -86,13 +86,7 @@
         <h2 style="color: var(--text-muted);">The library is currently empty</h2>
         <p style="color: var(--text-muted); margin-bottom: 2rem;">Be the first to share a book or search for something
             else!</p>
-        {% if current_user.is_authenticated and current_user.role == 'Admin' %}
-        <form action="{{ url_for('seed_db_route') }}" method="POST">
-            <button type="submit" style="width: auto; padding: 0.8rem 2rem; background: var(--primary);">
-                <i class="fas fa-magic"></i> Quick Seed Sample Data
-            </button>
-        </form>
-        {% elif current_user.is_authenticated %}
+        {% if current_user.is_authenticated %}
         <a href="{{ url_for('add_book') }}" style="text-decoration: none;">
             <button style="width: auto; padding: 0.8rem 2rem;">Share a Book Now</button>
         </a>

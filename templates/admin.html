@@ -2,16 +2,7 @@
 {% block body_class %}page-admin{% endblock %}
 {% block content %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-    <h1 style="margin: 0;">Admin Overview</h1>
-    <form action="{{ url_for('seed_db_route') }}" method="POST" style="margin: 0;"
-        onsubmit="return confirm('Wait! This will DELETE all current data and reset the database with sample data. Continue?');">
-        <button type="submit"
-            style="background: linear-gradient(135deg, #ff7675, #d63031); width: auto; padding: 0.5rem 1.5rem; border-radius: 50px; font-weight: 600;">
-            <i class="fas fa-database" style="margin-right: 8px;"></i> Seed Database (Reset)
-        </button>
-    </form>
-</div>
+<h1 style="margin-bottom: 2rem;">Admin Overview</h1>
 
 <!-- Metrics Cards -->
 <div class="grid" style="margin-bottom: 3rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
