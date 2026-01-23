@@ -467,6 +467,15 @@ def admin_dashboard():
         returned_books=returned_books
     )
 
+@app.route('/admin/seed-data', methods=['POST', 'GET'])
+def admin_seed_data():
+    try:
+        from seed_db import seed_database
+        seed_database(force_reset=True)
+        return "Database Seeded Successfully with 50+ books!", 200
+    except Exception as e:
+        return f"Seeding failed: {str(e)}", 500
+
 @app.route('/admin/delete_book/<int:id>', methods=['POST'])
 @login_required
 def delete_book_admin(id):
