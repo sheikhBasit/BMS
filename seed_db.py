@@ -54,7 +54,11 @@ def seed_database(force_reset=False):
         
         # Helper to get random user
         def get_owner():
-            return random.choice(users_objs[1:]) # Skip admin
+            # If we only have 1 user (admin or otherwise), always return the first one
+            if len(users_objs) <= 1:
+                return users_objs[0]
+            # Otherwise return a random user excluding the admin (index 0)
+            return random.choice(users_objs[1:])
             
         book_list = [
             ("The Great Gatsby", "F. Scott Fitzgerald", "Fiction", "Physical", None, "Main Library, Shelf A", "Classic novel of the Jazz Age."),
