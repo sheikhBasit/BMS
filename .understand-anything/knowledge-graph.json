@@ -1,0 +1,388 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-04-20T00:00:00.000Z",
+  "projectRoot": "/home/basitdev/Me/BMS",
+  "nodes": [
+    {
+      "id": "file:app.py",
+      "type": "file",
+      "name": "app.py",
+      "filePath": "app.py",
+      "layer": "api",
+      "summary": "Main Flask application: registers all routes for auth, book CRUD, borrow workflow, admin dashboard, likes, and Cloudinary file uploads; handles Vercel/Postgres compatibility at startup.",
+      "language": "python",
+      "concepts": ["flask", "routing", "auth", "file-upload", "cloudinary"]
+    },
+    {
+      "id": "file:models.py",
+      "type": "file",
+      "name": "models.py",
+      "filePath": "models.py",
+      "layer": "data",
+      "summary": "SQLAlchemy ORM models for User, Book, BorrowRequest, and BookLike with relationships, soft-delete flag, and password hashing via Werkzeug.",
+      "language": "python",
+      "concepts": ["sqlalchemy", "orm", "flask-sqlalchemy", "werkzeug", "relationships"]
+    },
+    {
+      "id": "file:config.py",
+      "type": "file",
+      "name": "config.py",
+      "filePath": "config.py",
+      "layer": "utility",
+      "summary": "Flask Config class loaded from env vars; resolves DATABASE_URL with postgres:// fix for SQLAlchemy 1.4+, sets Cloudinary credentials, session lifetime, and max upload size.",
+      "language": "python",
+      "concepts": ["configuration", "env-vars", "database-url"]
+    },
+    {
+      "id": "file:seed_db.py",
+      "type": "file",
+      "name": "seed_db.py",
+      "filePath": "seed_db.py",
+      "layer": "utility",
+      "summary": "Database seeder that creates sample users, books (physical and digital), and borrow requests for development and demo environments.",
+      "language": "python",
+      "concepts": ["seeding", "fixtures", "dev-data"]
+    },
+    {
+      "id": "file:init_db.py",
+      "type": "file",
+      "name": "init_db.py",
+      "filePath": "init_db.py",
+      "layer": "utility",
+      "summary": "One-time database initialisation script that creates all tables using db.create_all() within the Flask app context.",
+      "language": "python",
+      "concepts": ["database-init", "flask-app-context", "migrations"]
+    },
+    {
+      "id": "file:debug_login.py",
+      "type": "file",
+      "name": "debug_login.py",
+      "filePath": "debug_login.py",
+      "layer": "utility",
+      "summary": "Debug script for testing login authentication logic outside of a running Flask server.",
+      "language": "python",
+      "concepts": ["debugging", "auth-testing"]
+    },
+    {
+      "id": "file:remote_seeder.py",
+      "type": "file",
+      "name": "remote_seeder.py",
+      "filePath": "remote_seeder.py",
+      "layer": "utility",
+      "summary": "Hits the /admin/seed-data endpoint on a remote deployment to seed production or staging data.",
+      "language": "python",
+      "concepts": ["seeding", "http-client", "remote-admin"]
+    },
+    {
+      "id": "file:templates/base.html",
+      "type": "file",
+      "name": "base.html",
+      "filePath": "templates/base.html",
+      "layer": "ui",
+      "summary": "Jinja2 base template providing the shared HTML skeleton, navigation bar, flash message display, and Bootstrap imports.",
+      "language": "html",
+      "concepts": ["jinja2", "template-inheritance", "bootstrap", "navigation"]
+    },
+    {
+      "id": "file:templates/index.html",
+      "type": "file",
+      "name": "index.html",
+      "filePath": "templates/index.html",
+      "layer": "ui",
+      "summary": "Public book catalogue page with keyword search bar and a grid of book cards showing title, author, category, and type.",
+      "language": "html",
+      "concepts": ["jinja2", "search", "book-listing"]
+    },
+    {
+      "id": "file:templates/login.html",
+      "type": "file",
+      "name": "login.html",
+      "filePath": "templates/login.html",
+      "layer": "ui",
+      "summary": "Login form template with username, password, and remember-me fields.",
+      "language": "html",
+      "concepts": ["auth", "form", "flask-login"]
+    },
+    {
+      "id": "file:templates/register.html",
+      "type": "file",
+      "name": "register.html",
+      "filePath": "templates/register.html",
+      "layer": "ui",
+      "summary": "User registration form template with username, email, and password fields.",
+      "language": "html",
+      "concepts": ["auth", "form", "registration"]
+    },
+    {
+      "id": "file:templates/dashboard.html",
+      "type": "file",
+      "name": "dashboard.html",
+      "filePath": "templates/dashboard.html",
+      "layer": "ui",
+      "summary": "Member dashboard showing the user's owned books, borrow requests they made, and borrow requests they received.",
+      "language": "html",
+      "concepts": ["dashboard", "jinja2", "member-view"]
+    },
+    {
+      "id": "file:templates/admin.html",
+      "type": "file",
+      "name": "admin.html",
+      "filePath": "templates/admin.html",
+      "layer": "ui",
+      "summary": "Admin dashboard with metrics (total users, books, active borrows, overdue), user management table, book management table, and Chart.js visualisations.",
+      "language": "html",
+      "concepts": ["admin", "chartjs", "metrics", "user-management"]
+    },
+    {
+      "id": "file:templates/add_book.html",
+      "type": "file",
+      "name": "add_book.html",
+      "filePath": "templates/add_book.html",
+      "layer": "ui",
+      "summary": "Book creation form with fields for title, author, category, type (physical/digital), file upload or link, location, and description.",
+      "language": "html",
+      "concepts": ["form", "file-upload", "book-creation"]
+    },
+    {
+      "id": "file:templates/book_detail.html",
+      "type": "file",
+      "name": "book_detail.html",
+      "filePath": "templates/book_detail.html",
+      "layer": "ui",
+      "summary": "Book detail page showing full book info, like button, borrow button, and download link for digital books.",
+      "language": "html",
+      "concepts": ["book-detail", "likes", "borrow-request"]
+    },
+    {
+      "id": "file:templates/request_borrow.html",
+      "type": "file",
+      "name": "request_borrow.html",
+      "filePath": "templates/request_borrow.html",
+      "layer": "ui",
+      "summary": "Borrow request form for physical books where the borrower proposes a meeting date, time, and location.",
+      "language": "html",
+      "concepts": ["form", "borrow-request", "scheduling"]
+    },
+    {
+      "id": "file:static/style.css",
+      "type": "file",
+      "name": "style.css",
+      "filePath": "static/style.css",
+      "layer": "ui",
+      "summary": "Application-wide CSS styles for the book management system UI.",
+      "language": "css",
+      "concepts": ["css", "styling"]
+    },
+    {
+      "id": "file:tests/conftest.py",
+      "type": "file",
+      "name": "conftest.py",
+      "filePath": "tests/conftest.py",
+      "layer": "utility",
+      "summary": "Pytest fixtures providing an in-memory SQLite test app, database, and pre-seeded admin/member users.",
+      "language": "python",
+      "concepts": ["pytest", "fixtures", "test-config", "in-memory-db"]
+    },
+    {
+      "id": "file:tests/test_endpoints.py",
+      "type": "file",
+      "name": "test_endpoints.py",
+      "filePath": "tests/test_endpoints.py",
+      "layer": "utility",
+      "summary": "Core endpoint tests covering registration, login, book creation, borrowing, and admin actions.",
+      "language": "python",
+      "concepts": ["pytest", "integration-tests", "http-testing"]
+    },
+    {
+      "id": "file:tests/test_features.py",
+      "type": "file",
+      "name": "test_features.py",
+      "filePath": "tests/test_features.py",
+      "layer": "utility",
+      "summary": "Feature-level tests for book likes, soft deletes, block/unblock users, and search functionality.",
+      "language": "python",
+      "concepts": ["pytest", "feature-testing"]
+    },
+    {
+      "id": "file:tests/test_extended.py",
+      "type": "file",
+      "name": "test_extended.py",
+      "filePath": "tests/test_extended.py",
+      "layer": "utility",
+      "summary": "Extended edge-case tests covering validation errors, permission checks, and overdue borrow scenarios.",
+      "language": "python",
+      "concepts": ["pytest", "edge-cases", "permissions"]
+    },
+    {
+      "id": "file:docker-compose.yml",
+      "type": "file",
+      "name": "docker-compose.yml",
+      "filePath": "docker-compose.yml",
+      "layer": "utility",
+      "summary": "Docker Compose setup defining the Flask app service with environment variable injection and port binding.",
+      "language": "yaml",
+      "concepts": ["docker", "containerization", "deployment"]
+    },
+    {
+      "id": "file:vercel.json",
+      "type": "file",
+      "name": "vercel.json",
+      "filePath": "vercel.json",
+      "layer": "utility",
+      "summary": "Vercel serverless deployment config routing all requests to the Flask WSGI app via a Python runtime.",
+      "language": "json",
+      "concepts": ["vercel", "serverless", "wsgi", "deployment"]
+    },
+    {
+      "id": "class:User",
+      "type": "class",
+      "name": "User",
+      "filePath": "models.py",
+      "layer": "data",
+      "summary": "SQLAlchemy model for registered users with username, email, hashed password, role (member/admin), and is_blocked flag; uses Flask-Login UserMixin.",
+      "language": "python",
+      "concepts": ["sqlalchemy", "authentication", "flask-login", "roles"]
+    },
+    {
+      "id": "class:Book",
+      "type": "class",
+      "name": "Book",
+      "filePath": "models.py",
+      "layer": "data",
+      "summary": "SQLAlchemy model for books: title, author, category, type (physical/digital), file_link, likes count, availability status, soft-delete flag, and owner relationship.",
+      "language": "python",
+      "concepts": ["sqlalchemy", "book", "soft-delete", "cloudinary"]
+    },
+    {
+      "id": "class:BorrowRequest",
+      "type": "class",
+      "name": "BorrowRequest",
+      "filePath": "models.py",
+      "layer": "data",
+      "summary": "SQLAlchemy model representing a borrow request with proposed date/time/location and status (Pending/Accepted/Rejected) linking borrower and book.",
+      "language": "python",
+      "concepts": ["sqlalchemy", "borrow-workflow", "status-machine"]
+    },
+    {
+      "id": "class:BookLike",
+      "type": "class",
+      "name": "BookLike",
+      "filePath": "models.py",
+      "layer": "data",
+      "summary": "Association table enforcing a unique (user, book) like constraint to prevent duplicate likes.",
+      "language": "python",
+      "concepts": ["sqlalchemy", "association-table", "unique-constraint"]
+    },
+    {
+      "id": "function:ensure_ready",
+      "type": "function",
+      "name": "ensure_ready",
+      "filePath": "app.py",
+      "layer": "api",
+      "summary": "Startup function that creates tables, runs Postgres schema migration for password_hash column, seeds admin user, and auto-seeds books if the library is empty.",
+      "language": "python",
+      "concepts": ["startup", "migration", "seeding", "admin-bootstrap"]
+    },
+    {
+      "id": "function:login",
+      "type": "function",
+      "name": "login",
+      "filePath": "app.py",
+      "layer": "api",
+      "summary": "Login route: validates credentials, checks is_blocked, and calls Flask-Login login_user with remember-me support.",
+      "language": "python",
+      "concepts": ["authentication", "flask-login", "security"]
+    },
+    {
+      "id": "function:add_book",
+      "type": "function",
+      "name": "add_book",
+      "filePath": "app.py",
+      "layer": "api",
+      "summary": "Book creation route: validates form input, uploads file to Cloudinary (or local for dev), and persists the Book record.",
+      "language": "python",
+      "concepts": ["file-upload", "cloudinary", "form-validation"]
+    },
+    {
+      "id": "function:request_borrow",
+      "type": "function",
+      "name": "request_borrow",
+      "filePath": "app.py",
+      "layer": "api",
+      "summary": "Creates a BorrowRequest for physical books, or immediately marks digital books as borrowed with auto-accepted status.",
+      "language": "python",
+      "concepts": ["borrow-workflow", "digital-vs-physical", "status"]
+    },
+    {
+      "id": "function:like_book",
+      "type": "function",
+      "name": "like_book",
+      "filePath": "app.py",
+      "layer": "api",
+      "summary": "Toggle like/unlike for a book: adds or removes a BookLike record and updates the denormalized likes counter on Book.",
+      "language": "python",
+      "concepts": ["likes", "toggle", "json-api"]
+    },
+    {
+      "id": "function:admin_dashboard",
+      "type": "function",
+      "name": "admin_dashboard",
+      "filePath": "app.py",
+      "layer": "api",
+      "summary": "Admin-only dashboard route that aggregates metrics: total users, books, borrow counts, overdue items, and chart data for physical vs digital split.",
+      "language": "python",
+      "concepts": ["admin", "metrics", "aggregation", "role-check"]
+    }
+  ],
+  "edges": [
+    { "id": "e1", "source": "file:app.py", "target": "file:models.py", "type": "imports" },
+    { "id": "e2", "source": "file:app.py", "target": "file:config.py", "type": "imports" },
+    { "id": "e3", "source": "file:app.py", "target": "file:seed_db.py", "type": "imports" },
+    { "id": "e4", "source": "file:init_db.py", "target": "file:app.py", "type": "imports" },
+    { "id": "e5", "source": "file:debug_login.py", "target": "file:app.py", "type": "imports" },
+    { "id": "e6", "source": "file:tests/conftest.py", "target": "file:app.py", "type": "imports" },
+    { "id": "e7", "source": "file:tests/conftest.py", "target": "file:models.py", "type": "imports" },
+    { "id": "e8", "source": "file:tests/test_endpoints.py", "target": "file:tests/conftest.py", "type": "uses" },
+    { "id": "e9", "source": "file:tests/test_features.py", "target": "file:tests/conftest.py", "type": "uses" },
+    { "id": "e10", "source": "file:tests/test_extended.py", "target": "file:tests/conftest.py", "type": "uses" },
+    { "id": "e11", "source": "class:User", "target": "class:BookLike", "type": "uses" },
+    { "id": "e12", "source": "class:Book", "target": "class:BorrowRequest", "type": "uses" },
+    { "id": "e13", "source": "class:Book", "target": "class:BookLike", "type": "uses" },
+    { "id": "e14", "source": "class:BorrowRequest", "target": "class:User", "type": "uses" },
+    { "id": "e15", "source": "class:BorrowRequest", "target": "class:Book", "type": "uses" },
+    { "id": "e16", "source": "function:ensure_ready", "target": "file:seed_db.py", "type": "calls" },
+    { "id": "e17", "source": "function:login", "target": "class:User", "type": "uses" },
+    { "id": "e18", "source": "function:add_book", "target": "class:Book", "type": "uses" },
+    { "id": "e19", "source": "function:request_borrow", "target": "class:BorrowRequest", "type": "uses" },
+    { "id": "e20", "source": "function:like_book", "target": "class:BookLike", "type": "uses" },
+    { "id": "e21", "source": "function:admin_dashboard", "target": "class:User", "type": "uses" },
+    { "id": "e22", "source": "function:admin_dashboard", "target": "class:Book", "type": "uses" }
+  ],
+  "tours": [
+    {
+      "id": "tour:getting-started",
+      "title": "Getting Started — Project Structure Overview",
+      "steps": [
+        { "nodeId": "file:config.py", "reason": "Start with configuration: database URL, Cloudinary credentials, and session settings." },
+        { "nodeId": "file:models.py", "reason": "Understand the four data models before reading routes." },
+        { "nodeId": "class:User", "reason": "User model with role-based access (member/admin) and block flag." },
+        { "nodeId": "class:Book", "reason": "Book model supporting both physical and digital types with soft-delete." },
+        { "nodeId": "class:BorrowRequest", "reason": "Borrow workflow state machine: Pending → Accepted/Rejected." },
+        { "nodeId": "file:app.py", "reason": "All routes live here: auth, books, borrowing, admin, likes." },
+        { "nodeId": "function:ensure_ready", "reason": "Called at startup to bootstrap the database, admin user, and seed data." }
+      ]
+    },
+    {
+      "id": "tour:borrow-data-flow",
+      "title": "Core Data Flow — Borrowing a Book",
+      "steps": [
+        { "nodeId": "file:templates/index.html", "reason": "User browses the public catalogue and searches for a book." },
+        { "nodeId": "file:templates/book_detail.html", "reason": "User views book detail, sees like button and borrow request form." },
+        { "nodeId": "function:request_borrow", "reason": "POST handler creates a BorrowRequest (physical) or auto-accepts it (digital)." },
+        { "nodeId": "class:BorrowRequest", "reason": "Request record holds proposed meeting details and transitions through status states." },
+        { "nodeId": "file:templates/dashboard.html", "reason": "Both owner and borrower see request status in their personal dashboards." },
+        { "nodeId": "function:admin_dashboard", "reason": "Admin sees all requests, overdue items, and aggregate metrics." }
+      ]
+    }
+  ]
+}
